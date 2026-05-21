@@ -616,7 +616,7 @@ a:hover { color: var(--sans-mint-deep); }
   </div><!-- /step-input -->
 
   <div id="result-wrap" style="display: none;">
-    <div class="info-banner no-print"><i class="ti ti-circle-check"></i> 산정서가 생성되었습니다. <strong>PDF 저장</strong> 시 인쇄 다이얼로그에서 <strong>"대상: PDF로 저장"</strong>을 선택하세요.</div>
+    <div class="info-banner no-print" id="result-info-banner"><i class="ti ti-circle-check"></i> <span id="result-info-text">산정서가 생성되었습니다.</span></div>
 
     <div id="capture-area" class="capture-area">
       <div class="capture-header">
@@ -691,11 +691,9 @@ a:hover { color: var(--sans-mint-deep); }
       </div>
     </div>
 
-    <div class="no-print" style="margin-top: 12px; display: grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap: 8px;">
+    <div class="no-print" style="margin-top: 12px; display: grid; grid-template-columns: 1fr 2fr; gap: 8px;">
       <button id="edit-btn" class="btn"><i class="ti ti-arrow-left"></i> 기안 수정</button>
-      <button id="pdf-btn" class="btn-primary" style="padding: 14px;"><i class="ti ti-printer"></i> PDF 저장 / 인쇄</button>
-      <button id="copy-btn" class="btn"><i class="ti ti-copy"></i> 텍스트 복사</button>
-      <button id="reset-btn" class="btn"><i class="ti ti-refresh"></i> 초기화</button>
+      <button id="pdf-btn" class="btn-primary" style="padding: 14px;"><i class="ti ti-download"></i> <span id="pdf-btn-label">저장</span></button>
     </div>
   </div>
 
@@ -742,6 +740,7 @@ a:hover { color: var(--sans-mint-deep); }
 </div>
 
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 // ============================================================
 const KAKAO_REST_API_KEY = "1652cd767cbc3a6a2c1af26e73d7890b";
@@ -1477,22 +1476,93 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function downloadPDF() {
+  // 모바일 감지 (User Agent + 화면 너비)
+  function isMobile() {
+    const ua = navigator.userAgent || '';
+    const mobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+    const narrowScreen = window.innerWidth < 768;
+    return mobileUA || narrowScreen;
+  }
+
+  // PC: 인쇄 다이얼로그 (PDF로 저장)
+  function downloadAsPDF() {
     if (!lastCalc) return;
-    
-    // 인쇄 시 파일명 힌트 (브라우저 PDF 저장 시 기본 파일명으로 사용됨)
     const c = lastCalc;
     const safeName = (c.applicant || '미입력').replace(/[\/\\?%*:|"<>]/g, '_');
     const safeDate = (c.tripDate || new Date().toISOString().slice(0,10)).replace(/-/g, '');
     const originalTitle = document.title;
     document.title = `출장유류비_${safeName}_${safeDate}`;
-    
-    // 브라우저 인쇄 다이얼로그 호출
-    // 사용자가 "대상: PDF로 저장" 선택 시 텍스트 보존된 PDF 생성됨
     window.print();
-    
-    // 원래 제목 복원
     setTimeout(() => { document.title = originalTitle; }, 500);
+  }
+
+  // 모바일: 이미지(PNG) 다운로드
+  async function downloadAsImage() {
+    if (!lastCalc) return;
+    const c = lastCalc;
+    const btn = $('pdf-btn');
+    const orig = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin"><i class="ti ti-loader-2"></i></span> 이미지 생성 중...';
+
+    try {
+      const captureEl = $('capture-area');
+      const canvas = await html2canvas(captureEl, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        windowWidth: captureEl.scrollWidth,
+        windowHeight: captureEl.scrollHeight
+      });
+
+      const safeName = (c.applicant || '미입력').replace(/[\/\\?%*:|"<>]/g, '_');
+      const safeDate = (c.tripDate || new Date().toISOString().slice(0,10)).replace(/-/g, '');
+      const filename = `출장유류비_${safeName}_${safeDate}.png`;
+
+      // Blob 방식으로 다운로드 (iOS Safari 호환)
+      canvas.toBlob(function(blob) {
+        if (!blob) { throw new Error('이미지 생성 실패'); }
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+        
+        btn.innerHTML = '<i class="ti ti-check"></i> 저장 완료';
+        setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 1500);
+      }, 'image/png');
+    } catch (e) {
+      console.error('Image generation error:', e);
+      alert('이미지 생성 실패: ' + e.message);
+      btn.innerHTML = orig;
+      btn.disabled = false;
+    }
+  }
+
+  // 통합 다운로드 핸들러
+  function handleDownload() {
+    if (isMobile()) {
+      downloadAsImage();
+    } else {
+      downloadAsPDF();
+    }
+  }
+
+  // 버튼 라벨 자동 설정
+  function updateDownloadButtonLabel() {
+    const label = $('pdf-btn-label');
+    const infoText = $('result-info-text');
+    if (isMobile()) {
+      if (label) label.textContent = '이미지 저장';
+      if (infoText) infoText.innerHTML = '산정서가 생성되었습니다. <strong>이미지 저장</strong> 버튼을 누르면 PNG 파일로 다운로드됩니다.';
+    } else {
+      if (label) label.textContent = 'PDF 저장 / 인쇄';
+      if (infoText) infoText.innerHTML = '산정서가 생성되었습니다. <strong>PDF 저장</strong> 시 인쇄 다이얼로그에서 <strong>"대상: PDF로 저장"</strong>을 선택하세요.';
+    }
   }
 
   function copyText() {
@@ -1655,14 +1725,15 @@ ${basisText}
   $('auto-calc-btn').addEventListener('click', autoCalcDistance);
   $('calc-btn').addEventListener('click', calculate);
   $('edit-btn').addEventListener('click', editDraft);
-  $('pdf-btn').addEventListener('click', downloadPDF);
-  $('copy-btn').addEventListener('click', copyText);
-  $('reset-btn').addEventListener('click', reset);
+  $('pdf-btn').addEventListener('click', handleDownload);
 
   $('trip-date').value = new Date().toISOString().slice(0,10);
   load();
   addVisit();
   updateHomeAddrVisibility();
+  updateDownloadButtonLabel();
+  // 화면 리사이즈 시 라벨 재설정 (예: 태블릿 회전)
+  window.addEventListener('resize', updateDownloadButtonLabel);
   // 초기 로드 시 출장일자(오늘) 기준 유가 조회
   fetchOpinetPricesForTripDate(false);
 })();
