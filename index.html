@@ -28,7 +28,6 @@
   body { margin: 0; padding: 0; font-family: var(--font-sans); background: var(--bg-tertiary); color: var(--text-primary); font-size: 14px; line-height: 1.6; }
   .container { max-width: 720px; margin: 0 auto; padding: 24px 16px; }
   h1 { font-size: 22px; font-weight: 500; margin: 0 0 4px; }
-  h2 { font-size: 18px; font-weight: 500; margin: 0 0 4px; }
   .subtitle { font-size: 12px; color: var(--text-secondary); margin: 0 0 16px; }
   .section-card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 16px; }
   .section-title { font-size: 14px; font-weight: 500; margin: 0 0 12px; display: flex; align-items: center; gap: 6px; }
@@ -44,20 +43,30 @@
   .btn-primary:hover { background: #d4e6f8; }
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
   .mb-12 { margin-bottom: 12px; }
   .mb-8 { margin-bottom: 8px; }
-  details summary { padding: 20px; cursor: pointer; font-size: 14px; font-weight: 500; list-style: none; }
-  details summary::-webkit-details-marker { display: none; }
-  details summary::before { content: "▶"; margin-right: 8px; font-size: 10px; }
-  details[open] summary::before { content: "▼"; }
-  details .details-body { padding: 0 20px 20px; }
+  .mb-16 { margin-bottom: 16px; }
   .addr-input-wrap { display: grid; grid-template-columns: 1fr auto; gap: 6px; }
   .addr-search-btn { padding: 8px 12px; white-space: nowrap; font-size: 12px; width: auto; }
-  .distance-box { background: var(--bg-secondary); border-radius: var(--radius-md); padding: 12px; margin-bottom: 12px; }
+  .fixed-display { background: var(--bg-secondary); padding: 8px 12px; border-radius: var(--radius-md); font-size: 14px; color: var(--text-primary); border: 0.5px solid var(--border); height: 36px; display: flex; align-items: center; box-sizing: border-box; }
+  .distance-box { background: var(--bg-secondary); border-radius: var(--radius-md); padding: 12px; }
   .info-banner { background: var(--bg-info); padding: 10px 14px; border-radius: var(--radius-md); margin-bottom: 12px; font-size: 12px; color: var(--text-info); }
+  .info-mini { background: var(--bg-info); padding: 8px 12px; border-radius: var(--radius-md); font-size: 11px; color: var(--text-info); }
   .warning-banner { background: var(--bg-warning); padding: 10px 14px; border-radius: var(--radius-md); margin-bottom: 12px; font-size: 13px; color: var(--text-warning); }
+  .settings-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .lock-icon { color: var(--text-tertiary); font-size: 12px; margin-left: 6px; }
   .spin { animation: spin 1s linear infinite; display: inline-block; }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* 영수증 업로드 */
+  .receipt-upload { border: 1px dashed var(--border-strong); border-radius: var(--radius-md); padding: 12px; margin-top: 4px; text-align: center; cursor: pointer; background: var(--bg-secondary); transition: background 0.15s; }
+  .receipt-upload:hover { background: var(--bg-tertiary); }
+  .receipt-preview { position: relative; margin-top: 4px; }
+  .receipt-preview img { max-width: 100%; max-height: 120px; border-radius: var(--radius-md); border: 0.5px solid var(--border); display: block; margin: 0 auto; }
+  .receipt-remove { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; padding: 0; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+
+  /* 캡쳐 영역 */
   .capture-area { background: white; color: #1a1a1a; border: 1px solid #d0d0d0; border-radius: 8px; padding: 24px; }
   .capture-header { border-bottom: 2px solid #1a1a1a; padding-bottom: 12px; margin-bottom: 16px; }
   .capture-section { margin-bottom: 16px; }
@@ -70,8 +79,13 @@
   .capture-total-table { width: 100%; font-size: 13px; border-collapse: collapse; }
   .capture-total-table tr td { padding: 6px 0; border-bottom: 1px solid #e5e5e5; }
   .capture-total-table tr.total td { background: #E6F1FB; color: #042C53; font-weight: 500; padding: 8px; border-bottom: none; }
+  .capture-receipts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .capture-receipts img { max-width: 100%; max-height: 250px; border: 1px solid #d0d0d0; border-radius: 6px; display: block; margin: 4px auto 0; object-fit: contain; }
+  .capture-receipt-label { font-size: 11px; color: #666; font-weight: 500; text-align: center; margin: 0; }
+  .receipt-attached-mark { color: var(--text-info); font-size: 11px; }
+
   @media print { body { background: white; } .no-print { display: none !important; } .capture-area { border: none; padding: 0; } }
-  @media (max-width: 600px) { .grid-3 { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) { .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; } .capture-receipts { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -80,13 +94,14 @@
 
   <div class="no-print" style="margin-bottom: 16px;">
     <h1>출장 유류비 산정</h1>
-    <p class="subtitle">Daum 주소검색 + 카카오 좌표변환 + OSRM 거리계산</p>
+    <p class="subtitle">결과 화면 캡쳐 → Flex 지출결의서 첨부</p>
   </div>
 
   <div id="key-alert" class="warning-banner no-print" style="display: none;">
-    <i class="ti ti-alert-triangle"></i> 카카오 REST API 키가 설정되지 않았습니다. 하단 "설정"에서 입력해주세요.
+    <i class="ti ti-alert-triangle"></i> 카카오 REST API 키가 설정되지 않았습니다. 관리자에게 문의하세요.
   </div>
 
+  <!-- 기본 정보 -->
   <div class="section-card no-print">
     <p class="section-title"><i class="ti ti-user"></i>기본 정보</p>
     <div class="grid-2 mb-12">
@@ -99,23 +114,25 @@
     </div>
   </div>
 
+  <!-- 차량 정보 -->
   <div class="section-card no-print">
     <p class="section-title"><i class="ti ti-car"></i>차량 정보</p>
     <div class="grid-2">
       <div>
-        <label class="field-label">차량 구분</label>
-        <select id="vehicle">
-          <option value="경차/소형 (14km/L)|gasoline|14">경차/소형 · 14km/L</option>
-          <option value="준중형/중형 (12km/L)|gasoline|12" selected>준중형/중형 · 12km/L</option>
-          <option value="중대형/SUV (10km/L)|gasoline|10">중대형/SUV · 10km/L</option>
-          <option value="하이브리드 (18km/L)|gasoline|18">하이브리드 · 18km/L</option>
-          <option value="디젤 (14km/L)|diesel|14">디젤 · 14km/L</option>
+        <label class="field-label">연료 종류</label>
+        <select id="fuel-type">
+          <option value="gasoline" selected>휘발유</option>
+          <option value="diesel">경유</option>
+          <option value="lpg">LPG</option>
+          <option value="hybrid">하이브리드</option>
         </select>
       </div>
       <div><label class="field-label">차량번호</label><input type="text" id="carnum" placeholder="12가 3456"></div>
     </div>
+    <p id="fuel-info" style="font-size: 11px; color: var(--text-tertiary); margin: 8px 0 0;"></p>
   </div>
 
+  <!-- 출장지 & 거리 -->
   <div class="section-card no-print">
     <p class="section-title"><i class="ti ti-route"></i>출장지 & 거리</p>
     <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 12px;">"주소 찾기" 버튼으로 정확한 주소를 검색하세요.</p>
@@ -126,16 +143,12 @@
         <input type="text" id="home-addr" placeholder="주소 찾기 버튼 클릭" readonly>
         <button class="addr-search-btn" onclick="searchAddr('home-addr')"><i class="ti ti-search"></i> 주소 찾기</button>
       </div>
-      <input type="text" id="home-addr-detail" placeholder="상세주소 (선택, 예: 101동 502호)" style="margin-top: 4px;">
+      <input type="text" id="home-addr-detail" placeholder="상세주소 (선택)" style="margin-top: 4px;">
     </div>
 
     <div class="mb-8">
-      <label class="field-label">회사 주소</label>
-      <div class="addr-input-wrap">
-        <input type="text" id="office-addr" value="서울특별시 중구 청계천로 100" readonly>
-        <button class="addr-search-btn" onclick="searchAddr('office-addr')"><i class="ti ti-search"></i> 변경</button>
-      </div>
-      <input type="text" id="office-addr-detail" value="시그니처타워 서관" style="margin-top: 4px;">
+      <label class="field-label">회사 주소 <i class="ti ti-lock-filled lock-icon"></i></label>
+      <div class="fixed-display">서울특별시 중구 청계천로 100 시그니처타워 서관</div>
     </div>
 
     <div class="mb-12">
@@ -160,36 +173,80 @@
         <div><label class="field-label">출장지 → 집</label><input type="number" id="site-home" min="0" step="0.1"></div>
         <div><label class="field-label">출장지 → 회사</label><input type="number" id="site-office" min="0" step="0.1"></div>
       </div>
-      <label class="field-label">복귀 형태</label>
-      <select id="return-type">
-        <option value="auto" selected>자동 (가까운 쪽 채택)</option>
-        <option value="home">집으로 바로 퇴근</option>
-        <option value="office">회사 복귀 후 퇴근</option>
-      </select>
-    </div>
-
-    <div class="grid-2">
-      <div><label class="field-label">통행료 (원)</label><input type="number" id="toll" min="0" step="100" value="0"></div>
-      <div><label class="field-label">주차비 (원)</label><input type="number" id="parking" min="0" step="100" value="0"></div>
+      <div class="info-mini">
+        <i class="ti ti-info-circle"></i> 출발·복귀 모두 <strong>가까운 쪽 자동 채택</strong> (사규)
+      </div>
     </div>
   </div>
 
-  <details class="section-card no-print" style="padding: 0;">
-    <summary><i class="ti ti-settings"></i> 설정</summary>
-    <div class="details-body">
-      <p style="font-size: 13px; font-weight: 500; margin: 0 0 4px;">카카오 REST API 키</p>
-      <p style="font-size: 11px; color: var(--text-tertiary); margin: 0 0 8px;"><a href="https://developers.kakao.com" target="_blank">developers.kakao.com</a> → 내 애플리케이션 → 앱 키 → REST API 키 (JavaScript 키 아님)</p>
-      <input type="text" id="kakao-rest-key" placeholder="REST API 키 입력 후 자동 저장" style="margin-bottom: 12px;">
+  <!-- 부대비용 & 영수증 -->
+  <div class="section-card no-print">
+    <p class="section-title"><i class="ti ti-receipt"></i>부대비용 & 영수증</p>
+    <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 12px;">금액 입력 후 영수증 이미지를 첨부하면 결과 화면에 같이 표시됩니다. (선택)</p>
 
-      <p style="font-size: 13px; font-weight: 500; margin: 12px 0 4px;">오피넷 유가 단가</p>
-      <p style="font-size: 11px; color: var(--text-tertiary); margin: 0 0 8px;">매월 1일 <a href="https://www.opinet.co.kr" target="_blank">오피넷</a> 전국평균 확인 후 갱신</p>
-      <div class="grid-3">
-        <div><label class="field-label">휘발유 (원/L)</label><input type="number" id="cfg-gas" min="0" step="1" value="1700"></div>
-        <div><label class="field-label">경유 (원/L)</label><input type="number" id="cfg-diesel" min="0" step="1" value="1550"></div>
-        <div><label class="field-label">보정계수</label><input type="number" id="cfg-mult" min="1" max="2" step="0.1" value="1.4"></div>
+    <div class="grid-2">
+      <div>
+        <label class="field-label">통행료 (원)</label>
+        <input type="number" id="toll" min="0" step="100" value="0">
+        <div class="receipt-upload" id="toll-upload-btn" onclick="document.getElementById('toll-receipt').click()">
+          <input type="file" id="toll-receipt" accept="image/*" style="display: none;">
+          <span style="font-size: 12px; color: var(--text-secondary);"><i class="ti ti-photo-plus"></i> 영수증 첨부</span>
+        </div>
+        <div id="toll-receipt-preview" class="receipt-preview" style="display: none;">
+          <img id="toll-receipt-img">
+          <button class="receipt-remove" onclick="removeReceipt('toll')"><i class="ti ti-x"></i></button>
+        </div>
+      </div>
+      <div>
+        <label class="field-label">주차비 (원)</label>
+        <input type="number" id="parking" min="0" step="100" value="0">
+        <div class="receipt-upload" id="parking-upload-btn" onclick="document.getElementById('parking-receipt').click()">
+          <input type="file" id="parking-receipt" accept="image/*" style="display: none;">
+          <span style="font-size: 12px; color: var(--text-secondary);"><i class="ti ti-photo-plus"></i> 영수증 첨부</span>
+        </div>
+        <div id="parking-receipt-preview" class="receipt-preview" style="display: none;">
+          <img id="parking-receipt-img">
+          <button class="receipt-remove" onclick="removeReceipt('parking')"><i class="ti ti-x"></i></button>
+        </div>
       </div>
     </div>
-  </details>
+  </div>
+
+  <!-- 설정 (잠금) -->
+  <div class="section-card no-print" id="settings-card">
+    <div class="settings-header" id="settings-header">
+      <p class="section-title" style="margin: 0;"><i class="ti ti-lock"></i>관리자 설정</p>
+      <span id="settings-toggle" style="font-size: 12px; color: var(--text-secondary);">잠금 해제 ▶</span>
+    </div>
+
+    <div id="settings-body" style="display: none; margin-top: 16px;">
+      <p style="font-size: 13px; font-weight: 500; margin: 0 0 4px;">카카오 REST API 키</p>
+      <p style="font-size: 11px; color: var(--text-tertiary); margin: 0 0 8px;"><a href="https://developers.kakao.com" target="_blank">developers.kakao.com</a> → 내 애플리케이션 → 앱 → 플랫폼 키 → REST API 키</p>
+      <input type="text" id="kakao-rest-key" placeholder="REST API 키 입력" class="mb-16">
+
+      <p style="font-size: 13px; font-weight: 500; margin: 0 0 4px;">오피넷 유가 단가</p>
+      <p style="font-size: 11px; color: var(--text-tertiary); margin: 0 0 8px;">매월 1일 <a href="https://www.opinet.co.kr" target="_blank">오피넷</a> 전국평균 확인 후 갱신</p>
+      <div class="grid-3 mb-8">
+        <div><label class="field-label">휘발유 (원/L)</label><input type="number" id="cfg-gas" min="0" step="1" value="1700"></div>
+        <div><label class="field-label">경유 (원/L)</label><input type="number" id="cfg-diesel" min="0" step="1" value="1550"></div>
+        <div><label class="field-label">LPG (원/L)</label><input type="number" id="cfg-lpg" min="0" step="1" value="1100"></div>
+      </div>
+      <p id="opinet-updated" style="font-size: 11px; color: var(--text-tertiary); margin: 0 0 16px;"></p>
+
+      <p style="font-size: 13px; font-weight: 500; margin: 0 0 4px;">연료별 표준 연비 (km/L)</p>
+      <div class="grid-4 mb-16">
+        <div><label class="field-label">휘발유</label><input type="number" id="cfg-mileage-gas" min="0" step="0.1" value="12"></div>
+        <div><label class="field-label">경유</label><input type="number" id="cfg-mileage-diesel" min="0" step="0.1" value="14"></div>
+        <div><label class="field-label">LPG</label><input type="number" id="cfg-mileage-lpg" min="0" step="0.1" value="9"></div>
+        <div><label class="field-label">하이브리드</label><input type="number" id="cfg-mileage-hybrid" min="0" step="0.1" value="18"></div>
+      </div>
+
+      <p style="font-size: 13px; font-weight: 500; margin: 0 0 4px;">보정계수</p>
+      <input type="number" id="cfg-mult" min="1" max="2" step="0.1" value="1.4" class="mb-16">
+
+      <button id="save-settings-btn" class="btn-primary">설정 저장 후 잠금</button>
+    </div>
+  </div>
 
   <button id="calc-btn" class="btn-primary no-print" style="margin-bottom: 16px;"><i class="ti ti-calculator"></i> 계산하기</button>
 
@@ -221,7 +278,7 @@
           <p style="margin: 0 0 4px;"><strong style="font-weight: 500;">출발:</strong> <span id="cap-depart-logic"></span></p>
           <p style="margin: 0;"><strong style="font-weight: 500;">복귀:</strong> <span id="cap-return-logic"></span></p>
         </div>
-        <p style="font-size: 10px; color: #888; margin: 4px 0 0;">※ 사규: 실거리와 회사 기준 거리 중 짧은 거리 인정</p>
+        <p style="font-size: 10px; color: #888; margin: 4px 0 0;">※ 사규: 실거리와 회사 기준 거리 중 짧은 거리 자동 인정</p>
       </div>
 
       <div class="capture-section">
@@ -230,14 +287,28 @@
         <p style="font-size: 10px; color: #888; margin: 4px 0 0;" id="cap-formula-note"></p>
       </div>
 
-      <div class="capture-section" style="margin-bottom: 0;">
+      <div class="capture-section">
         <p class="capture-section-title">4. 지급 내역</p>
         <table class="capture-total-table">
           <tr><td>유류비</td><td style="text-align: right;" id="cap-fuel"></td></tr>
-          <tr><td>통행료</td><td style="text-align: right;" id="cap-toll"></td></tr>
-          <tr><td>주차비</td><td style="text-align: right;" id="cap-parking"></td></tr>
+          <tr><td>통행료 <span id="cap-toll-mark" class="receipt-attached-mark" style="display:none;">(영수증 첨부)</span></td><td style="text-align: right;" id="cap-toll"></td></tr>
+          <tr><td>주차비 <span id="cap-parking-mark" class="receipt-attached-mark" style="display:none;">(영수증 첨부)</span></td><td style="text-align: right;" id="cap-parking"></td></tr>
           <tr class="total"><td>총 지급액</td><td style="text-align: right;" id="cap-total"></td></tr>
         </table>
+      </div>
+
+      <div class="capture-section" id="cap-receipts-section" style="display: none; margin-bottom: 0;">
+        <p class="capture-section-title">5. 영수증</p>
+        <div class="capture-receipts">
+          <div id="cap-toll-receipt-wrap" style="display: none;">
+            <p class="capture-receipt-label">통행료 영수증</p>
+            <img id="cap-toll-receipt-img" alt="통행료 영수증">
+          </div>
+          <div id="cap-parking-receipt-wrap" style="display: none;">
+            <p class="capture-receipt-label">주차비 영수증</p>
+            <img id="cap-parking-receipt-img" alt="주차비 영수증">
+          </div>
+        </div>
       </div>
     </div>
 
@@ -254,40 +325,90 @@
 (function() {
   const $ = (id) => document.getElementById(id);
   const fmt = (n) => Math.round(n).toLocaleString('ko-KR');
+  const ADMIN_PW = '2580';
+  const OFFICE_ADDR = '서울특별시 중구 청계천로 100';
   let lastCalc = null;
+  let settingsUnlocked = false;
+  let officeCoord = null;
+  let receipts = { toll: null, parking: null };
+
+  const FUEL_LABELS = { gasoline: '휘발유', diesel: '경유', lpg: 'LPG', hybrid: '하이브리드' };
 
   function load() {
     try {
-      const keys = ['applicant','department','carnum','vehicle','home-addr','home-addr-detail','office-addr','office-addr-detail','kakao-rest-key','cfg-gas','cfg-diesel','cfg-mult'];
-      keys.forEach(k => {
+      const personal = ['applicant','department','carnum','fuel-type','home-addr','home-addr-detail'];
+      personal.forEach(k => {
         const v = localStorage.getItem('tc-' + k);
         if (v !== null && $(k)) $(k).value = v;
       });
-      ['home-addr','office-addr'].forEach(id => {
-        const lat = localStorage.getItem('tc-' + id + '-lat');
-        const lng = localStorage.getItem('tc-' + id + '-lng');
-        if (lat && lng) {
-          $(id).dataset.lat = lat;
-          $(id).dataset.lng = lng;
-        }
+      const admin = ['kakao-rest-key','cfg-gas','cfg-diesel','cfg-lpg','cfg-mileage-gas','cfg-mileage-diesel','cfg-mileage-lpg','cfg-mileage-hybrid','cfg-mult'];
+      admin.forEach(k => {
+        const v = localStorage.getItem('tc-' + k);
+        if (v !== null && $(k)) $(k).value = v;
       });
+      const lat = localStorage.getItem('tc-home-addr-lat');
+      const lng = localStorage.getItem('tc-home-addr-lng');
+      if (lat && lng) {
+        $('home-addr').dataset.lat = lat;
+        $('home-addr').dataset.lng = lng;
+      }
+      const offLat = localStorage.getItem('tc-office-lat');
+      const offLng = localStorage.getItem('tc-office-lng');
+      if (offLat && offLng) officeCoord = { lat: parseFloat(offLat), lng: parseFloat(offLng) };
+      const opinetDate = localStorage.getItem('tc-opinet-updated');
+      if (opinetDate) $('opinet-updated').textContent = `마지막 갱신: ${opinetDate}`;
     } catch (e) {}
-    checkKey();
-  }
-
-  function save(key, value) {
-    try { localStorage.setItem('tc-' + key, value); } catch (e) {}
-  }
-
-  function checkKey() {
     const key = $('kakao-rest-key').value.trim();
     $('key-alert').style.display = key ? 'none' : 'block';
   }
 
+  function save(key, value) { try { localStorage.setItem('tc-' + key, value); } catch (e) {} }
+
+  function updateFuelInfo() {
+    const fuel = $('fuel-type').value;
+    const mileage = getMileage(fuel);
+    const price = getFuelPrice(fuel);
+    $('fuel-info').textContent = `현재 ${FUEL_LABELS[fuel]} 적용: 표준 연비 ${mileage}km/L · 단가 ${fmt(price)}원/L`;
+  }
+
+  function getMileage(fuel) {
+    const id = 'cfg-mileage-' + (fuel === 'gasoline' ? 'gas' : fuel);
+    return parseFloat($(id).value) || 12;
+  }
+
+  function getFuelPrice(fuel) {
+    if (fuel === 'hybrid') return parseFloat($('cfg-gas').value) || 1700;
+    const id = 'cfg-' + (fuel === 'gasoline' ? 'gas' : fuel);
+    return parseFloat($(id).value) || 1700;
+  }
+
+  // 영수증 업로드
+  function setupReceipt(type) {
+    $(type + '-receipt').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) { alert('파일 크기는 5MB 이하여야 합니다.'); return; }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        receipts[type] = ev.target.result;
+        $(type + '-receipt-img').src = ev.target.result;
+        $(type + '-receipt-preview').style.display = 'block';
+        $(type + '-upload-btn').style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  window.removeReceipt = function(type) {
+    receipts[type] = null;
+    $(type + '-receipt-preview').style.display = 'none';
+    $(type + '-upload-btn').style.display = 'block';
+    $(type + '-receipt').value = '';
+  };
+
   window.searchAddr = function(targetId) {
     if (typeof daum === 'undefined' || !daum.Postcode) {
-      alert('주소 검색 스크립트가 로드되지 않았습니다. 잠시 후 다시 시도해주세요.');
-      return;
+      alert('주소 검색 스크립트가 로드되지 않았습니다.'); return;
     }
     new daum.Postcode({
       oncomplete: function(data) {
@@ -356,11 +477,17 @@
     return coord;
   }
 
+  async function getOfficeCoord() {
+    if (officeCoord) return officeCoord;
+    officeCoord = await kakaoGeocode(OFFICE_ADDR);
+    save('office-lat', officeCoord.lat);
+    save('office-lng', officeCoord.lng);
+    return officeCoord;
+  }
+
   async function autoCalcDistance() {
-    const key = $('kakao-rest-key').value.trim();
-    if (!key) { alert('설정에서 카카오 REST API 키를 먼저 등록해주세요.'); return; }
+    if (!$('kakao-rest-key').value.trim()) { alert('관리자가 카카오 API 키를 설정해야 합니다.'); return; }
     if (!$('home-addr').value.trim()) { alert('자택 주소를 입력해주세요.'); return; }
-    if (!$('office-addr').value.trim()) { alert('회사 주소를 입력해주세요.'); return; }
     if (!$('site-addr').value.trim()) { alert('출장지 주소를 입력해주세요.'); return; }
 
     const btn = $('auto-calc-btn');
@@ -370,7 +497,7 @@
 
     try {
       const [home, office, site] = await Promise.all([
-        getCoord('home-addr'), getCoord('office-addr'), getCoord('site-addr')
+        getCoord('home-addr'), getOfficeCoord(), getCoord('site-addr')
       ]);
 
       let d_home_site, d_office_site, source;
@@ -410,10 +537,10 @@
     const siteAddrDetail = $('site-addr-detail').value.trim();
     const siteAddr = (siteAddrBase + (siteAddrDetail ? ' ' + siteAddrDetail : '')) || '(미입력)';
 
-    const vehicleParts = $('vehicle').value.split('|');
-    const vehicleLabel = vehicleParts[0];
-    const fuelType = vehicleParts[1];
-    const mileage = parseFloat(vehicleParts[2]);
+    const fuelType = $('fuel-type').value;
+    const fuelLabel = FUEL_LABELS[fuelType];
+    const mileage = getMileage(fuelType);
+    const fuelPrice = getFuelPrice(fuelType);
 
     const homeToSite = parseFloat($('home-site').value) || 0;
     const officeToSite = parseFloat($('office-site').value) || 0;
@@ -429,25 +556,15 @@
     } else if (homeToSite > 0) { departKm = homeToSite; departLogic = `집에서 직접 출발 (${homeToSite}km)`; }
     else { departKm = officeToSite; departLogic = `회사에서 출발 (${officeToSite}km)`; }
 
-    const returnType = $('return-type').value;
     let returnKm = 0, returnLogic = '';
-    if (returnType === 'auto') {
-      if (siteToHome > 0 && siteToOffice > 0) {
-        if (siteToHome <= siteToOffice) { returnKm = siteToHome; returnLogic = `출장지→집(${siteToHome}km) ≤ 출장지→회사(${siteToOffice}km) → 집 복귀 인정`; }
-        else { returnKm = siteToOffice; returnLogic = `출장지→회사(${siteToOffice}km) < 출장지→집(${siteToHome}km) → 회사 복귀 인정`; }
-      } else if (siteToHome > 0) { returnKm = siteToHome; returnLogic = `집으로 복귀 (${siteToHome}km)`; }
-      else if (siteToOffice > 0) { returnKm = siteToOffice; returnLogic = `회사로 복귀 (${siteToOffice}km)`; }
-    } else if (returnType === 'home') {
-      returnKm = siteToHome; returnLogic = `집으로 바로 퇴근 (${siteToHome}km, 사용자 지정)`;
-    } else {
-      returnKm = siteToOffice; returnLogic = `회사 복귀 후 퇴근 (${siteToOffice}km, 통근거리 제외)`;
-    }
+    if (siteToHome > 0 && siteToOffice > 0) {
+      if (siteToHome <= siteToOffice) { returnKm = siteToHome; returnLogic = `출장지→집(${siteToHome}km) ≤ 출장지→회사(${siteToOffice}km) → 집 복귀 인정`; }
+      else { returnKm = siteToOffice; returnLogic = `출장지→회사(${siteToOffice}km) < 출장지→집(${siteToHome}km) → 회사 복귀 인정`; }
+    } else if (siteToHome > 0) { returnKm = siteToHome; returnLogic = `집으로 복귀 (${siteToHome}km)`; }
+    else if (siteToOffice > 0) { returnKm = siteToOffice; returnLogic = `회사로 복귀 (${siteToOffice}km)`; }
 
     const totalKm = departKm + returnKm;
-    const gasPrice = parseFloat($('cfg-gas').value) || 1700;
-    const dieselPrice = parseFloat($('cfg-diesel').value) || 1550;
     const multiplier = parseFloat($('cfg-mult').value) || 1.4;
-    const fuelPrice = fuelType === 'diesel' ? dieselPrice : gasPrice;
     const fuelUsed = totalKm / mileage;
     const rawFuelCost = fuelUsed * fuelPrice;
     const adjustedFuelCost = rawFuelCost * multiplier;
@@ -457,7 +574,7 @@
 
     lastCalc = {
       applicant, department, tripDate, purpose, carNumber, siteAddr,
-      vehicleLabel, mileage, fuelType, fuelPrice, multiplier,
+      fuelType, fuelLabel, mileage, fuelPrice, multiplier,
       homeToSite, officeToSite, siteToHome, siteToOffice,
       departKm, returnKm, totalKm, departLogic, returnLogic,
       fuelUsed, rawFuelCost, adjustedFuelCost, toll, parking, totalCost
@@ -467,7 +584,7 @@
     $('cap-applicant').textContent = department ? `${applicant} (${department})` : applicant;
     $('cap-date').textContent = tripDate;
     $('cap-purpose').textContent = purpose;
-    $('cap-vehicle').textContent = `${vehicleLabel} / ${carNumber}`;
+    $('cap-vehicle').textContent = `${fuelLabel} (${mileage}km/L) / ${carNumber}`;
     $('cap-site').textContent = siteAddr;
     $('cap-distances').textContent = `집→출장(${homeToSite}km) · 회사→출장(${officeToSite}km) · 출장→집(${siteToHome}km) · 출장→회사(${siteToOffice}km)`;
     $('cap-depart-logic').textContent = departLogic;
@@ -476,11 +593,33 @@
 사용연료 = ${totalKm.toFixed(1)} ÷ ${mileage} = ${fuelUsed.toFixed(2)} L<br>
 연료비 = ${fuelUsed.toFixed(2)} L × ${fmt(fuelPrice)}원 = ${fmt(rawFuelCost)}원<br>
 보정 적용 = ${fmt(rawFuelCost)}원 × ${multiplier} = <strong>${fmt(adjustedFuelCost)}원</strong>`;
-    $('cap-formula-note').textContent = `※ 보정계수 ${multiplier}는 차량 감가·소모품·정비비 등 유지비 반영. ${fuelType === 'diesel' ? '경유' : '휘발유'} 단가는 오피넷 전국평균 기준`;
+    $('cap-formula-note').textContent = `※ 보정계수 ${multiplier}는 차량 감가·소모품·정비비 등 유지비 반영. ${fuelLabel} 단가는 오피넷 전국평균 기준`;
     $('cap-fuel').textContent = fmt(adjustedFuelCost) + ' 원';
     $('cap-toll').textContent = fmt(toll) + ' 원';
     $('cap-parking').textContent = fmt(parking) + ' 원';
     $('cap-total').textContent = fmt(totalCost) + ' 원';
+
+    // 영수증 표시
+    let hasReceipt = false;
+    if (receipts.toll) {
+      $('cap-toll-receipt-img').src = receipts.toll;
+      $('cap-toll-receipt-wrap').style.display = 'block';
+      $('cap-toll-mark').style.display = 'inline';
+      hasReceipt = true;
+    } else {
+      $('cap-toll-receipt-wrap').style.display = 'none';
+      $('cap-toll-mark').style.display = 'none';
+    }
+    if (receipts.parking) {
+      $('cap-parking-receipt-img').src = receipts.parking;
+      $('cap-parking-receipt-wrap').style.display = 'block';
+      $('cap-parking-mark').style.display = 'inline';
+      hasReceipt = true;
+    } else {
+      $('cap-parking-receipt-wrap').style.display = 'none';
+      $('cap-parking-mark').style.display = 'none';
+    }
+    $('cap-receipts-section').style.display = hasReceipt ? 'block' : 'none';
 
     $('result-wrap').style.display = 'block';
     $('result-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -496,7 +635,7 @@
 - 신청자: ${c.applicant}${c.department ? ` (${c.department})` : ''}
 - 출장일자: ${c.tripDate}
 - 출장 목적: ${c.purpose}
-- 차량: ${c.vehicleLabel} / ${c.carNumber}
+- 차량: ${c.fuelLabel} (${c.mileage}km/L) / ${c.carNumber}
 - 출장지: ${c.siteAddr}
 
 2. 거리 산정 근거
@@ -512,8 +651,8 @@
 
 4. 지급 내역
 - 유류비: ${fmt(c.adjustedFuelCost)}원
-- 통행료: ${fmt(c.toll)}원
-- 주차비: ${fmt(c.parking)}원
+- 통행료: ${fmt(c.toll)}원${receipts.toll ? ' (영수증 첨부)' : ''}
+- 주차비: ${fmt(c.parking)}원${receipts.parking ? ' (영수증 첨부)' : ''}
 - 총 지급액: ${fmt(c.totalCost)}원`;
 
     navigator.clipboard.writeText(text).then(() => {
@@ -527,33 +666,67 @@
   function reset() {
     ['purpose','site-addr','site-addr-detail','home-site','office-site','site-home','site-office'].forEach(id => {
       $(id).value = '';
-      if ($(id).dataset) {
-        $(id).dataset.lat = '';
-        $(id).dataset.lng = '';
-      }
+      if ($(id).dataset) { $(id).dataset.lat = ''; $(id).dataset.lng = ''; }
     });
     $('toll').value = '0';
     $('parking').value = '0';
+    removeReceipt('toll');
+    removeReceipt('parking');
     $('result-wrap').style.display = 'none';
     $('distance-source').textContent = '';
     lastCalc = null;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  $('settings-header').addEventListener('click', () => {
+    if (settingsUnlocked) {
+      $('settings-body').style.display = 'none';
+      $('settings-toggle').textContent = '잠금 해제 ▶';
+      settingsUnlocked = false;
+      return;
+    }
+    const pw = prompt('관리자 비밀번호를 입력하세요:');
+    if (pw === null) return;
+    if (pw !== ADMIN_PW) { alert('비밀번호가 일치하지 않습니다.'); return; }
+    settingsUnlocked = true;
+    $('settings-body').style.display = 'block';
+    $('settings-toggle').textContent = '잠그기 ▼';
+  });
+
+  $('save-settings-btn').addEventListener('click', () => {
+    const admin = ['kakao-rest-key','cfg-gas','cfg-diesel','cfg-lpg','cfg-mileage-gas','cfg-mileage-diesel','cfg-mileage-lpg','cfg-mileage-hybrid','cfg-mult'];
+    admin.forEach(k => save(k, $(k).value));
+    const key = $('kakao-rest-key').value.trim();
+    $('key-alert').style.display = key ? 'none' : 'block';
+    const today = new Date().toLocaleDateString('ko-KR');
+    save('opinet-updated', today);
+    $('opinet-updated').textContent = `마지막 갱신: ${today}`;
+    updateFuelInfo();
+    settingsUnlocked = false;
+    $('settings-body').style.display = 'none';
+    $('settings-toggle').textContent = '잠금 해제 ▶';
+    alert('설정이 저장되고 잠금되었습니다.');
+  });
+
+  ['applicant','department','carnum','fuel-type','home-addr-detail'].forEach(id => {
+    $(id).addEventListener('change', (e) => {
+      save(id, e.target.value);
+      if (id === 'fuel-type') updateFuelInfo();
+    });
+    $(id).addEventListener('blur', (e) => save(id, e.target.value));
+  });
+
+  setupReceipt('toll');
+  setupReceipt('parking');
+
   $('auto-calc-btn').addEventListener('click', autoCalcDistance);
   $('calc-btn').addEventListener('click', calculate);
   $('copy-btn').addEventListener('click', copyText);
   $('reset-btn').addEventListener('click', reset);
 
-  ['applicant','department','carnum','vehicle','home-addr-detail','office-addr-detail','kakao-rest-key','cfg-gas','cfg-diesel','cfg-mult'].forEach(id => {
-    $(id).addEventListener('change', (e) => save(id, e.target.value));
-    $(id).addEventListener('blur', (e) => save(id, e.target.value));
-  });
-
-  $('kakao-rest-key').addEventListener('input', checkKey);
-
   $('trip-date').value = new Date().toISOString().slice(0,10);
   load();
+  updateFuelInfo();
 })();
 </script>
 
