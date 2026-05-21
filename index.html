@@ -411,7 +411,39 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 a { color: var(--sans-black); text-decoration: underline; }
 a:hover { color: var(--sans-mint-deep); }
 
-@media print { body { background: white; padding: 0; } .no-print { display: none !important; } .capture-area { border: none; padding: 0; } }
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+  body { 
+    background: white !important; 
+    padding: 0 !important; 
+    margin: 0 !important;
+  }
+  .no-print { display: none !important; }
+  .wrap {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .capture-area { 
+    border: none !important; 
+    padding: 0 !important; 
+    box-shadow: none !important;
+  }
+  /* 페이지 분할 방지 */
+  .capture-section { page-break-inside: avoid; }
+  .capture-rules { page-break-inside: avoid; }
+  .capture-route-table { page-break-inside: auto; }
+  .capture-route-table tr { page-break-inside: avoid; page-break-after: auto; }
+  .capture-total-table { page-break-inside: avoid; }
+  /* 컬러 인쇄 유지 */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
 @media (max-width: 600px) {
   .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; }
   .capture-receipts { grid-template-columns: 1fr; }
@@ -584,7 +616,7 @@ a:hover { color: var(--sans-mint-deep); }
   </div><!-- /step-input -->
 
   <div id="result-wrap" style="display: none;">
-    <div class="info-banner no-print"><i class="ti ti-circle-check"></i> 산정서가 생성되었습니다. PDF로 다운로드하거나 수정할 수 있습니다.</div>
+    <div class="info-banner no-print"><i class="ti ti-circle-check"></i> 산정서가 생성되었습니다. <strong>PDF 저장</strong> 시 인쇄 다이얼로그에서 <strong>"대상: PDF로 저장"</strong>을 선택하세요.</div>
 
     <div id="capture-area" class="capture-area">
       <div class="capture-header">
@@ -661,7 +693,7 @@ a:hover { color: var(--sans-mint-deep); }
 
     <div class="no-print" style="margin-top: 12px; display: grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap: 8px;">
       <button id="edit-btn" class="btn"><i class="ti ti-arrow-left"></i> 기안 수정</button>
-      <button id="pdf-btn" class="btn-primary" style="padding: 14px;"><i class="ti ti-file-download"></i> PDF 다운로드</button>
+      <button id="pdf-btn" class="btn-primary" style="padding: 14px;"><i class="ti ti-printer"></i> PDF 저장 / 인쇄</button>
       <button id="copy-btn" class="btn"><i class="ti ti-copy"></i> 텍스트 복사</button>
       <button id="reset-btn" class="btn"><i class="ti ti-refresh"></i> 초기화</button>
     </div>
@@ -710,11 +742,9 @@ a:hover { color: var(--sans-mint-deep); }
 </div>
 
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 // ============================================================
-const KAKAO_REST_API_KEY = "1652cd767cbc3a6a2c1af26e73d7890b";
+const KAKAO_REST_API_KEY = "여기에_본인_카카오_REST_API_키_입력";
 const WORKER_OPINET_URL = "https://wakefuel.jslee-43a.workers.dev/opinet";
 const DEFAULT_OFFICE_ADDR = "서울특별시 중구 청계천로 100";
 const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
@@ -1218,8 +1248,8 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
       if (departType === 'via-office') {
         departKm = await distance(office, firstVisit);
         departActualKm = departKm;
-        departLogic = `회사 출근 후 출장지로: 회사→출장지1 = ${departKm.toFixed(1)}km (집~회사 통근거리 제외)`;
-        departReason = '회사 출근 후 출발 (통근거리 제외)';
+        departLogic = `회사 출근 후 출장지로: 회사→출장지1 = ${departKm.toFixed(1)}km`;
+        departReason = '회사 출근 후 출발';
       } else {
         const dHome = await distance(home, firstVisit);
         const dOffice = await distance(office, firstVisit);
@@ -1249,8 +1279,8 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
       if (returnType === 'via-office') {
         returnKm = await distance(lastVisit, office);
         returnActualKm = returnKm;
-        returnLogic = `회사 복귀 후 퇴근: 출장지${visits.length}→회사 = ${returnKm.toFixed(1)}km (회사~집 통근거리 제외)`;
-        returnReason = '회사 복귀 후 퇴근 (통근거리 제외)';
+        returnLogic = `회사 복귀 후 퇴근: 출장지${visits.length}→회사 = ${returnKm.toFixed(1)}km`;
+        returnReason = '회사 복귀 후 퇴근';
       } else {
         const dHome = await distance(lastVisit, home);
         const dOffice = await distance(lastVisit, office);
@@ -1447,84 +1477,22 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  async function downloadPDF() {
+  function downloadPDF() {
     if (!lastCalc) return;
+    
+    // 인쇄 시 파일명 힌트 (브라우저 PDF 저장 시 기본 파일명으로 사용됨)
     const c = lastCalc;
-    const btn = $('pdf-btn');
-    const orig = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spin"><i class="ti ti-loader-2"></i></span> PDF 생성 중...';
-
-    try {
-      const captureEl = $('capture-area');
-      
-      // 고해상도 캡쳐 (2x scale)
-      const canvas = await html2canvas(captureEl, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        windowWidth: captureEl.scrollWidth,
-        windowHeight: captureEl.scrollHeight
-      });
-
-      // A4 세로 사이즈: 210mm × 297mm
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-      });
-
-      const pdfWidth = 210;
-      const pdfHeight = 297;
-      const margin = 10; // 좌우 여백
-      const contentWidth = pdfWidth - margin * 2;
-      
-      // 캔버스 비율에 맞춰 PDF 안에 들어갈 이미지 높이 계산
-      const imgWidth = contentWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      
-      // 한 페이지에 들어가는지 확인, 안 되면 여러 페이지로 분할
-      const pageContentHeight = pdfHeight - margin * 2;
-      
-      if (imgHeight <= pageContentHeight) {
-        // 한 페이지에 모두 들어감
-        pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, imgHeight);
-      } else {
-        // 여러 페이지로 분할
-        let remainingHeight = imgHeight;
-        let position = 0;
-        
-        while (remainingHeight > 0) {
-          // 현재 페이지에 추가
-          pdf.addImage(imgData, 'JPEG', margin, margin - position, imgWidth, imgHeight);
-          remainingHeight -= pageContentHeight;
-          position += pageContentHeight;
-          
-          if (remainingHeight > 0) {
-            pdf.addPage();
-          }
-        }
-      }
-
-      // 파일명 생성
-      const safeName = (c.applicant || '미입력').replace(/[\/\\?%*:|"<>]/g, '_');
-      const safeDate = (c.tripDate || new Date().toISOString().slice(0,10)).replace(/-/g, '');
-      const filename = `출장유류비_${safeName}_${safeDate}.pdf`;
-      
-      pdf.save(filename);
-      
-      btn.innerHTML = '<i class="ti ti-check"></i> 다운로드 완료';
-      setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 1500);
-    } catch (e) {
-      console.error('PDF generation error:', e);
-      alert('PDF 생성 실패: ' + e.message);
-      btn.innerHTML = orig;
-      btn.disabled = false;
-    }
+    const safeName = (c.applicant || '미입력').replace(/[\/\\?%*:|"<>]/g, '_');
+    const safeDate = (c.tripDate || new Date().toISOString().slice(0,10)).replace(/-/g, '');
+    const originalTitle = document.title;
+    document.title = `출장유류비_${safeName}_${safeDate}`;
+    
+    // 브라우저 인쇄 다이얼로그 호출
+    // 사용자가 "대상: PDF로 저장" 선택 시 텍스트 보존된 PDF 생성됨
+    window.print();
+    
+    // 원래 제목 복원
+    setTimeout(() => { document.title = originalTitle; }, 500);
   }
 
   function copyText() {
