@@ -6,136 +6,444 @@
 <title>출장 유류비 산정</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
 <style>
-  :root {
-    --bg-primary: #ffffff;
-    --bg-secondary: #f6f6f4;
-    --bg-tertiary: #f0efea;
-    --bg-info: #E6F1FB;
-    --bg-warning: #FAEEDA;
-    --bg-success: #E1F5EE;
-    --text-primary: #1a1a1a;
-    --text-secondary: #666;
-    --text-tertiary: #888;
-    --text-info: #042C53;
-    --text-warning: #854F0B;
-    --text-success: #085041;
-    --text-danger: #791F1F;
-    --border: #e0e0dc;
-    --border-strong: #c5c5c0;
-    --border-info: #185FA5;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --font-sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
-    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; padding: 0; font-family: var(--font-sans); background: var(--bg-tertiary); color: var(--text-primary); font-size: 14px; line-height: 1.6; }
-  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px; }
-  h1 { font-size: 22px; font-weight: 500; margin: 0 0 4px; }
-  .subtitle { font-size: 12px; color: var(--text-secondary); margin: 0 0 16px; }
-  .section-card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 16px; }
-  .section-title { font-size: 14px; font-weight: 500; margin: 0 0 12px; display: flex; align-items: center; gap: 6px; }
-  .field-label { font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 4px; }
-  input, select, button { width: 100%; padding: 8px 12px; border: 0.5px solid var(--border-strong); border-radius: var(--radius-md); font-size: 14px; font-family: inherit; background: var(--bg-primary); color: var(--text-primary); box-sizing: border-box; height: 36px; }
-  input[readonly] { background: var(--bg-secondary); }
-  input:focus, select:focus { outline: none; border-color: #378ADD; box-shadow: 0 0 0 2px rgba(55, 138, 221, 0.2); }
-  button { cursor: pointer; transition: background 0.15s; }
-  button:hover { background: var(--bg-secondary); }
-  button:active { transform: scale(0.98); }
-  button:disabled { opacity: 0.5; cursor: not-allowed; }
-  .btn-primary { background: var(--bg-info); color: var(--text-info); border-color: var(--border-info); font-weight: 500; }
-  .btn-primary:hover { background: #d4e6f8; }
-  .btn-sm { width: auto; padding: 6px 12px; font-size: 12px; height: auto; }
-  .btn-danger { color: var(--text-danger); }
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
-  .mb-12 { margin-bottom: 12px; }
-  .mb-8 { margin-bottom: 8px; }
-  .mb-16 { margin-bottom: 16px; }
-  .addr-input-wrap { display: grid; grid-template-columns: 1fr auto; gap: 6px; }
-  .addr-search-btn { padding: 8px 12px; white-space: nowrap; font-size: 12px; width: auto; }
-  .fixed-display { background: var(--bg-secondary); padding: 8px 12px; border-radius: var(--radius-md); font-size: 14px; color: var(--text-primary); border: 0.5px solid var(--border); height: 36px; display: flex; align-items: center; box-sizing: border-box; }
-  .info-banner { background: var(--bg-info); padding: 10px 14px; border-radius: var(--radius-md); margin-bottom: 12px; font-size: 12px; color: var(--text-info); }
-  .info-mini { background: var(--bg-info); padding: 8px 12px; border-radius: var(--radius-md); font-size: 11px; color: var(--text-info); }
-  .warning-banner { background: var(--bg-warning); padding: 10px 14px; border-radius: var(--radius-md); margin-bottom: 12px; font-size: 13px; color: var(--text-warning); }
-  .settings-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-  .lock-icon { color: var(--text-tertiary); font-size: 12px; margin-left: 6px; }
-  .spin { animation: spin 1s linear infinite; display: inline-block; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  
-  .radio-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .radio-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; cursor: pointer; transition: all 0.15s; }
-  .radio-card:hover { background: var(--bg-tertiary); }
-  .radio-card.selected { background: var(--bg-info); border-color: var(--border-info); color: var(--text-info); }
-  .radio-card-title { font-size: 13px; font-weight: 500; margin: 0 0 2px; display: flex; align-items: center; gap: 6px; }
-  .radio-card-desc { font-size: 11px; color: var(--text-secondary); margin: 0; }
-  .radio-card.selected .radio-card-desc { color: var(--text-info); opacity: 0.8; }
-  
-  .visit-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; margin-bottom: 8px; }
-  .visit-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .visit-card-title { font-size: 13px; font-weight: 500; color: var(--text-primary); margin: 0; }
-  .visit-card-actions { display: flex; gap: 4px; }
-  .icon-btn { width: 28px; height: 28px; padding: 0; display: flex; align-items: center; justify-content: center; background: var(--bg-primary); }
-  
-  .receipt-upload { border: 1px dashed var(--border-strong); border-radius: var(--radius-md); padding: 12px; margin-top: 4px; text-align: center; cursor: pointer; background: var(--bg-secondary); transition: background 0.15s; }
-  .receipt-upload:hover { background: var(--bg-tertiary); }
-  .receipt-preview { position: relative; margin-top: 4px; }
-  .receipt-preview img { max-width: 100%; max-height: 120px; border-radius: var(--radius-md); border: 0.5px solid var(--border); display: block; margin: 0 auto; }
-  .receipt-remove { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; padding: 0; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; }
-  
-  .capture-area { background: white; color: #1a1a1a; border: 1px solid #d0d0d0; border-radius: 8px; padding: 24px; }
-  .capture-header { border-bottom: 2px solid #1a1a1a; padding-bottom: 12px; margin-bottom: 16px; }
-  .capture-section { margin-bottom: 16px; }
-  .capture-section-title { font-size: 12px; font-weight: 500; color: #555; margin: 0 0 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .capture-table { width: 100%; font-size: 13px; border-collapse: collapse; }
-  .capture-table td { padding: 4px 0; }
-  .capture-table td.label { color: #666; width: 30%; }
-  .capture-box { background: #f6f6f4; border-radius: 6px; padding: 10px 12px; font-size: 12px; }
-  .capture-calc { background: #f6f6f4; border-radius: 6px; padding: 10px 12px; font-size: 12px; font-family: var(--font-mono); line-height: 1.8; }
-  .capture-route-table { width: 100%; font-size: 12px; border-collapse: collapse; }
-  .capture-route-table th, .capture-route-table td { padding: 6px 8px; text-align: left; border-bottom: 1px solid #e5e5e5; }
-  .capture-route-table th { background: #f6f6f4; font-weight: 500; color: #555; font-size: 11px; }
-  .capture-route-table td.km { text-align: right; font-family: var(--font-mono); }
-  .capture-total-table { width: 100%; font-size: 13px; border-collapse: collapse; }
-  .capture-total-table tr td { padding: 6px 0; border-bottom: 1px solid #e5e5e5; }
-  .capture-total-table tr.total td { background: #E6F1FB; color: #042C53; font-weight: 500; padding: 8px; border-bottom: none; }
-  .capture-receipts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .capture-receipts img { max-width: 100%; max-height: 250px; border: 1px solid #d0d0d0; border-radius: 6px; display: block; margin: 4px auto 0; object-fit: contain; }
-  .capture-receipt-label { font-size: 11px; color: #666; font-weight: 500; text-align: center; margin: 0; }
-  .receipt-attached-mark { color: var(--text-info); font-size: 11px; }
-  .capture-basis { background: #f0f7ff; border-left: 3px solid #185FA5; padding: 8px 12px; font-size: 11px; color: #042C53; margin-top: 8px; border-radius: 4px; }
-  
-  @media print { body { background: white; } .no-print { display: none !important; } .capture-area { border: none; padding: 0; } }
-  @media (max-width: 600px) { .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; } .capture-receipts { grid-template-columns: 1fr; } .radio-group { grid-template-columns: 1fr; } }
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+
+:root {
+  --sans-mint: #C0FFEE;
+  --sans-mint-tint: #E4FBF4;
+  --sans-mint-deep: #6BD4B5;
+  --sans-black: #000000;
+  --sans-white: #FFFFFF;
+  --gray-50:  #FAFAFA;
+  --gray-100: #F4F4F4;
+  --gray-200: #EAEAEA;
+  --gray-300: #DCDCDC;
+  --gray-500: #9A9A9A;
+  --gray-700: #555555;
+  --gray-900: #1A1A1A;
+  --error-red: #E24B4A;
+  --error-red-tint: #FDECEC;
+  --warning-amber: #B07A0E;
+  --warning-amber-tint: #FFF8E5;
+  --font-body: 'Pretendard', 'Inter', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
+  --font-mono: 'SF Mono', 'Menlo', 'Consolas', 'D2Coding', monospace;
+  --ease-quiet: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font-body);
+  background: var(--gray-50);
+  color: var(--sans-black);
+  min-height: 100vh;
+  padding: 2rem 1rem 4rem;
+  -webkit-font-smoothing: antialiased;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.wrap { width: 100%; max-width: 720px; margin: 0 auto; }
+
+.header-bar { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; }
+.header-text h1 {
+  font-size: 15px; font-weight: 800; color: var(--sans-black);
+  margin-bottom: 8px; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.header-text .subtitle { font-size: 11px; color: var(--gray-500); font-weight: 600; letter-spacing: 0.04em; }
+.settings-btn {
+  width: 40px; height: 40px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--sans-white); border: 1px solid var(--gray-200);
+  border-radius: 4px; cursor: pointer; transition: all 0.2s var(--ease-quiet);
+}
+.settings-btn:hover { background: var(--sans-black); border-color: var(--sans-black); }
+.settings-btn:hover i { color: var(--sans-mint) !important; }
+
+.section-card {
+  background: var(--sans-white); border: 1px solid var(--gray-200);
+  border-radius: 4px; padding: 1.5rem; margin-bottom: 1rem;
+}
+.section-title {
+  font-size: 11px; font-weight: 700; color: var(--gray-700);
+  margin-bottom: 1rem; letter-spacing: 0.12em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 6px;
+}
+
+.field-label {
+  font-size: 11px; color: var(--gray-700); display: block;
+  margin-bottom: 6px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+}
+.req { color: var(--error-red); margin-left: 2px; font-weight: 800; }
+input, select, button, textarea { font-family: inherit; font-size: 14px; }
+input[type="text"], input[type="number"], input[type="date"], select {
+  width: 100%; padding: 12px 14px;
+  border: 1px solid var(--gray-200); border-radius: 4px;
+  background: var(--sans-white); color: var(--sans-black);
+  transition: border-color 0.2s var(--ease-quiet), background 0.2s var(--ease-quiet);
+}
+input::placeholder { color: var(--gray-500); }
+input[readonly] { background: var(--gray-100); color: var(--gray-700); }
+input:focus, select:focus {
+  outline: none; border-color: var(--sans-black); background: var(--sans-white);
+}
+input.err-field, select.err-field { border-color: var(--error-red); background: var(--error-red-tint); }
+
+button { cursor: pointer; transition: all 0.2s var(--ease-quiet); border-radius: 4px; font-weight: 600; }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn {
+  width: 100%; padding: 14px; background: var(--sans-white);
+  border: 2px solid var(--sans-black); color: var(--sans-black);
+  font-size: 13px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.btn:hover { background: var(--sans-black); color: var(--sans-mint); }
+.btn:active { transform: scale(0.99); }
+
+.btn-primary {
+  width: 100%; padding: 16px; background: var(--sans-black); color: var(--sans-mint);
+  border: none; font-size: 13px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+}
+.btn-primary:hover { background: var(--gray-900); }
+
+.btn-sm {
+  width: auto; padding: 8px 14px; background: var(--gray-100);
+  border: none; color: var(--sans-black);
+  font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+}
+.btn-sm:hover { background: var(--gray-200); }
+
+.btn-add {
+  width: 100%; padding: 12px; background: var(--sans-white);
+  border: 1.5px dashed var(--gray-500); color: var(--gray-700);
+  font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  border-radius: 4px; cursor: pointer; transition: all 0.2s var(--ease-quiet);
+}
+.btn-add:hover { border-color: var(--sans-black); color: var(--sans-black); background: var(--gray-50); }
+.btn-add:active { transform: scale(0.99); }
+
+.sec-divider {
+  font-size: 10px; font-weight: 700; color: var(--gray-500);
+  margin: 1.5rem 0 0.85rem; padding-top: 1.25rem;
+  border-top: 1px solid var(--gray-200); letter-spacing: 0.12em; text-transform: uppercase;
+}
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
+.mb-12 { margin-bottom: 12px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-16 { margin-bottom: 16px; }
+
+.addr-input-wrap { display: grid; grid-template-columns: 1fr auto; gap: 6px; }
+.addr-search-btn {
+  padding: 0 18px; background: var(--sans-black); border: none; color: var(--sans-mint);
+  font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  white-space: nowrap; border-radius: 4px;
+}
+.addr-search-btn:hover { background: var(--gray-900); }
+.addr-search-btn:active { transform: scale(0.97); }
+
+.fixed-display {
+  background: var(--gray-100); padding: 12px 14px; border-radius: 4px;
+  font-size: 14px; color: var(--gray-700); border: 1px solid var(--gray-200);
+}
+
+.info-banner {
+  background: var(--sans-mint-tint); padding: 12px 14px; border-radius: 4px;
+  border-left: 3px solid var(--sans-mint-deep); margin-bottom: 12px;
+  font-size: 12px; color: var(--gray-900);
+}
+.info-mini {
+  background: var(--sans-mint-tint); padding: 10px 12px; border-radius: 4px;
+  border-left: 3px solid var(--sans-mint-deep); font-size: 11px;
+  color: var(--gray-900); margin-top: 10px;
+}
+.warning-banner {
+  background: var(--warning-amber-tint); padding: 12px 14px; border-radius: 4px;
+  border-left: 3px solid var(--warning-amber); margin-bottom: 12px;
+  font-size: 12px; color: var(--warning-amber); font-weight: 600;
+}
+
+.lock-icon { color: var(--gray-300); font-size: 11px; margin-left: 6px; }
+.spin { animation: spin 1s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.radio-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.radio-card {
+  padding: 14px 14px;
+  border-radius: 4px;
+  background: var(--gray-100);
+  cursor: pointer;
+  transition: all 0.2s var(--ease-quiet);
+  border: 1px solid transparent;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.radio-card:hover { background: var(--gray-200); }
+.radio-card.selected {
+  background: var(--sans-black);
+  border-color: var(--sans-black);
+}
+.radio-card.err-field { background: var(--error-red-tint); border-color: var(--error-red); }
+.radio-circle {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--gray-500);
+  background: var(--sans-white);
+  flex-shrink: 0;
+  margin-top: 1px;
+  position: relative;
+  transition: all 0.2s var(--ease-quiet);
+}
+.radio-card.selected .radio-circle {
+  border-color: var(--sans-mint);
+  background: transparent;
+}
+.radio-card.selected .radio-circle::after {
+  content: '';
+  position: absolute;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--sans-mint);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+}
+.radio-content { flex: 1; min-width: 0; }
+.radio-card-title {
+  font-size: 13px; font-weight: 700; color: var(--sans-black);
+  margin: 0 0 4px; letter-spacing: -0.01em;
+}
+.radio-card-desc {
+  font-size: 10px; color: var(--gray-500); margin: 0;
+  letter-spacing: 0.04em; text-transform: uppercase; font-weight: 500; line-height: 1.5;
+}
+.radio-card.selected .radio-card-title { color: var(--sans-mint); }
+.radio-card.selected .radio-card-desc { color: var(--sans-mint); opacity: 0.7; }
+
+.home-inline {
+  margin-top: 12px;
+  padding: 14px;
+  background: var(--sans-mint-tint);
+  border-left: 3px solid var(--sans-mint-deep);
+  border-radius: 4px;
+  display: none;
+}
+.home-inline.show { display: block; }
+.home-inline-title {
+  font-size: 11px; font-weight: 700; color: var(--gray-900);
+  margin-bottom: 8px; letter-spacing: 0.08em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 6px;
+}
+.home-inline-note {
+  font-size: 11px; color: var(--gray-900); margin-top: 8px;
+  font-weight: 500; line-height: 1.5;
+}
+
+.visit-card { background: var(--gray-100); border-radius: 4px; padding: 14px; margin-bottom: 6px; }
+.visit-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.visit-card-title {
+  font-size: 11px; font-weight: 700; color: var(--sans-black);
+  margin: 0; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.visit-card-actions { display: flex; gap: 4px; }
+.icon-btn {
+  width: 28px; height: 28px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--sans-white); border: none; color: var(--gray-700);
+}
+.icon-btn:hover { background: var(--sans-black); color: var(--sans-mint); }
+.icon-btn.btn-danger:hover { background: var(--error-red); color: var(--sans-white); }
+
+.receipt-upload {
+  border: 1px dashed var(--gray-300); border-radius: 4px; padding: 14px;
+  margin-top: 6px; text-align: center; cursor: pointer; background: var(--sans-white);
+  transition: all 0.2s var(--ease-quiet);
+}
+.receipt-upload:hover { border-color: var(--sans-black); background: var(--gray-50); }
+.receipt-upload span {
+  font-size: 11px; color: var(--gray-700); font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+.receipt-preview { position: relative; margin-top: 6px; }
+.receipt-preview img {
+  max-width: 100%; max-height: 120px; border-radius: 4px;
+  border: 1px solid var(--gray-200); display: block; margin: 0 auto;
+}
+.receipt-remove {
+  position: absolute; top: 4px; right: 4px;
+  background: rgba(0,0,0,0.8); color: var(--sans-mint);
+  border: none; border-radius: 50%; width: 24px; height: 24px; padding: 0;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+
+.modal-overlay {
+  display: none; position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+  z-index: 100; justify-content: center; align-items: flex-start;
+  padding: 24px 16px; overflow-y: auto;
+}
+.modal-overlay.show { display: flex; }
+.modal-content {
+  background: var(--sans-white); border-radius: 4px;
+  max-width: 680px; width: 100%; padding: 2rem; position: relative;
+}
+.modal-close {
+  position: absolute; top: 16px; right: 16px;
+  width: 32px; height: 32px; background: var(--gray-100);
+  border: none; color: var(--sans-black);
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-close:hover { background: var(--sans-black); color: var(--sans-mint); }
+.modal-title {
+  font-size: 15px; font-weight: 800; margin-bottom: 1.5rem;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 6px;
+}
+
+.route-summary-box {
+  background: var(--sans-mint-tint); padding: 14px; border-radius: 4px;
+  border-left: 3px solid var(--sans-mint-deep); margin-top: 12px;
+}
+.route-summary-title {
+  font-size: 10px; font-weight: 700; color: var(--gray-900);
+  margin-bottom: 8px; letter-spacing: 0.12em; text-transform: uppercase;
+}
+.route-summary-line { font-size: 12px; color: var(--gray-900); margin-bottom: 4px; line-height: 1.5; }
+.route-summary-total {
+  margin-top: 10px; padding-top: 8px;
+  border-top: 1px solid rgba(0,0,0,0.1);
+  font-size: 12px; font-weight: 700; color: var(--sans-black);
+}
+
+.capture-area {
+  background: var(--sans-white); color: var(--sans-black);
+  border: 1px solid var(--gray-300); border-radius: 4px;
+  padding: 2rem 1.75rem;
+}
+.capture-header { border-bottom: 3px solid var(--sans-black); padding-bottom: 14px; margin-bottom: 1.5rem; }
+.capture-header-title { font-size: 18px; font-weight: 800; margin: 0; letter-spacing: -0.01em; }
+.capture-header-date { font-size: 11px; color: var(--gray-500); margin: 6px 0 0; font-weight: 600; letter-spacing: 0.04em; }
+.capture-section { margin-bottom: 1.5rem; }
+.capture-section-title {
+  font-size: 10px; font-weight: 700; color: var(--gray-700);
+  margin: 0 0 8px; letter-spacing: 0.12em; text-transform: uppercase;
+}
+.capture-table { width: 100%; font-size: 13px; border-collapse: collapse; }
+.capture-table td { padding: 5px 0; }
+.capture-table td.label {
+  color: var(--gray-700); width: 30%; font-size: 11px;
+  font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+}
+.capture-calc {
+  background: var(--gray-100); border-radius: 4px; padding: 12px 14px;
+  font-size: 12px; font-family: var(--font-mono); line-height: 1.9; color: var(--gray-900);
+}
+.capture-route-table { width: 100%; font-size: 12px; border-collapse: collapse; }
+.capture-route-table th, .capture-route-table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--gray-200); }
+.capture-route-table th {
+  background: var(--gray-100); font-weight: 700; color: var(--gray-700);
+  font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.capture-route-table td.km { text-align: right; font-family: var(--font-mono); color: var(--sans-black); }
+.capture-route-table tfoot tr td {
+  background: var(--gray-50); font-weight: 700; border-bottom: none;
+  border-top: 2px solid var(--sans-black);
+}
+.capture-total-sum {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--gray-700); margin-top: 6px;
+}
+.capture-total-table { width: 100%; font-size: 13px; border-collapse: collapse; }
+.capture-total-table tr td { padding: 8px 0; border-bottom: 1px solid var(--gray-200); }
+.capture-total-table tr.total td {
+  background: var(--sans-black); color: var(--sans-mint);
+  font-weight: 800; padding: 12px; border-bottom: none;
+  font-size: 14px; letter-spacing: 0.04em;
+}
+.capture-receipts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.capture-receipts img {
+  max-width: 100%; max-height: 250px;
+  border: 1px solid var(--gray-300); border-radius: 4px;
+  display: block; margin: 6px auto 0; object-fit: contain;
+}
+.capture-receipt-label {
+  font-size: 10px; color: var(--gray-700); font-weight: 700;
+  text-align: center; margin: 0; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.receipt-attached-mark {
+  color: var(--sans-mint-deep); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase; margin-left: 4px;
+}
+.capture-basis {
+  background: var(--sans-mint-tint); border-left: 3px solid var(--sans-mint-deep);
+  padding: 12px 14px; font-size: 11px; color: var(--gray-900);
+  margin-top: 10px; border-radius: 4px; line-height: 1.7;
+}
+.capture-basis strong {
+  font-weight: 700; letter-spacing: 0.04em; display: block;
+  margin-bottom: 4px; font-size: 10px; text-transform: uppercase;
+}
+.capture-rules {
+  background: var(--warning-amber-tint); border: 1px solid #F0D589;
+  border-radius: 4px; padding: 14px 16px; margin-bottom: 1.5rem;
+}
+.capture-rules-title {
+  font-weight: 700; margin: 0 0 8px; font-size: 10px;
+  color: var(--warning-amber); letter-spacing: 0.12em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 6px;
+}
+.capture-rules ol { margin: 0; padding-left: 20px; line-height: 1.8; color: var(--gray-900); font-size: 11px; }
+.capture-rules ol li { margin-bottom: 2px; }
+
+#fuel-info { font-size: 11px; color: var(--gray-700); margin-top: 10px; letter-spacing: 0.02em; font-weight: 500; line-height: 1.7; }
+#fuel-info .fuel-info-line { display: block; }
+#fuel-info .fuel-info-source { color: var(--gray-500); font-size: 10px; }
+#distance-source { font-size: 11px; color: var(--gray-500); margin-top: 10px; text-align: center; font-weight: 600; letter-spacing: 0.04em; }
+#opinet-status { font-size: 11px; color: var(--gray-500); margin: 0 0 16px; font-weight: 500; }
+
+a { color: var(--sans-black); text-decoration: underline; }
+a:hover { color: var(--sans-mint-deep); }
+
+@media print { body { background: white; padding: 0; } .no-print { display: none !important; } .capture-area { border: none; padding: 0; } }
+@media (max-width: 600px) {
+  .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; }
+  .capture-receipts { grid-template-columns: 1fr; }
+  .radio-group { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
 
-<div class="container">
+<div class="wrap">
 
-  <div class="no-print" style="margin-bottom: 16px;">
-    <h1>출장 유류비 산정</h1>
-    <p class="subtitle">결과 화면 캡쳐 → Flex 지출결의서 첨부</p>
+  <div class="header-bar no-print">
+    <div class="header-text">
+      <h1>출장 유류비 산정</h1>
+      <p class="subtitle">결과 화면 캡쳐 → Flex 지출결의서 첨부</p>
+    </div>
+    <button class="settings-btn" id="open-settings-btn" title="관리자 설정">
+      <i class="ti ti-settings" style="font-size: 18px; color: var(--gray-700);"></i>
+    </button>
   </div>
 
   <div class="section-card no-print">
-    <p class="section-title"><i class="ti ti-user"></i>기본 정보</p>
+    <p class="section-title"><i class="ti ti-user"></i> 기본 정보</p>
     <div class="grid-2 mb-12">
-      <div><label class="field-label">신청자명</label><input type="text" id="applicant" placeholder="홍길동"></div>
-      <div><label class="field-label">소속/직급</label><input type="text" id="department" placeholder="영업팀 / 과장"></div>
+      <div><label class="field-label">신청자명<span class="req">*</span></label><input type="text" id="applicant" placeholder="홍길동"></div>
+      <div><label class="field-label">소속/직급<span class="req">*</span></label><input type="text" id="department" placeholder="영업팀 / 과장"></div>
     </div>
     <div class="grid-2">
-      <div><label class="field-label">출장일자</label><input type="date" id="trip-date"></div>
-      <div><label class="field-label">출장 목적</label><input type="text" id="purpose" placeholder="OO 거래처 미팅"></div>
+      <div><label class="field-label">출장일자<span class="req">*</span></label><input type="date" id="trip-date"></div>
+      <div><label class="field-label">출장 목적<span class="req">*</span></label><input type="text" id="purpose" placeholder="OO 거래처 미팅"></div>
     </div>
   </div>
 
   <div class="section-card no-print">
-    <p class="section-title"><i class="ti ti-car"></i>차량 정보</p>
+    <p class="section-title"><i class="ti ti-car"></i> 차량 정보</p>
     <div class="grid-2">
       <div>
-        <label class="field-label">연료 종류</label>
+        <label class="field-label">연료 종류<span class="req">*</span></label>
         <select id="fuel-type">
           <option value="gasoline" selected>휘발유</option>
           <option value="diesel">경유</option>
@@ -143,79 +451,104 @@
           <option value="hybrid">하이브리드</option>
         </select>
       </div>
-      <div><label class="field-label">차량번호</label><input type="text" id="carnum" placeholder="12가 3456"></div>
+      <div><label class="field-label">차량번호<span class="req">*</span></label><input type="text" id="carnum" placeholder="12가 3456"></div>
     </div>
-    <p id="fuel-info" style="font-size: 11px; color: var(--text-tertiary); margin: 8px 0 0;"></p>
+    <div id="fuel-info"></div>
   </div>
 
   <div class="section-card no-print">
-    <p class="section-title"><i class="ti ti-home"></i>자택 주소</p>
-    <div class="addr-input-wrap mb-8">
-      <input type="text" id="home-addr" placeholder="주소 찾기 버튼 클릭" readonly>
-      <button class="addr-search-btn" onclick="searchAddr('home-addr')"><i class="ti ti-search"></i> 주소 찾기</button>
-    </div>
-    <input type="text" id="home-addr-detail" placeholder="상세주소 (선택, 예: 101동 502호)">
-    <div style="margin-top: 8px;">
-      <label class="field-label">회사 주소 <i class="ti ti-lock-filled lock-icon"></i></label>
-      <div class="fixed-display" id="office-addr-display">서울특별시 중구 청계천로 100 시그니처타워 서관</div>
-    </div>
-  </div>
-
-  <div class="section-card no-print">
-    <p class="section-title"><i class="ti ti-sunrise"></i>출근 형태</p>
+    <p class="section-title"><i class="ti ti-sunrise"></i> 출장지 방문 형태</p>
     <div class="radio-group">
-      <div class="radio-card" data-value="via-office" onclick="selectDepart('via-office')">
-        <p class="radio-card-title"><i class="ti ti-building"></i> 회사 경유</p>
-        <p class="radio-card-desc">집→회사→출장지<br>(회사~출장지만 인정)</p>
+      <div class="radio-card selected" data-value="via-office" onclick="selectDepart('via-office')">
+        <div class="radio-circle"></div>
+        <div class="radio-content">
+          <p class="radio-card-title">회사 출근 후 출장지로</p>
+          <p class="radio-card-desc">집→회사→출장지<br>회사~출장지 거리 인정</p>
+        </div>
       </div>
-      <div class="radio-card selected" data-value="direct" onclick="selectDepart('direct')">
-        <p class="radio-card-title"><i class="ti ti-arrow-right"></i> 직출</p>
-        <p class="radio-card-desc">집→출장지 직행<br>(min(집~출장, 회사~출장))</p>
+      <div class="radio-card" data-value="direct" onclick="selectDepart('direct')">
+        <div class="radio-circle"></div>
+        <div class="radio-content">
+          <p class="radio-card-title">직출</p>
+          <p class="radio-card-desc">집→출장지 직행<br>집/회사 출발 중 짧은 거리</p>
+        </div>
       </div>
+    </div>
+    <div class="home-inline" id="home-inline-depart">
+      <p class="home-inline-title"><i class="ti ti-home" style="font-size:11px;"></i> 자택 주소 입력</p>
+      <div class="addr-input-wrap mb-8">
+        <input type="text" id="home-addr" placeholder="주소 찾기 버튼 클릭" readonly>
+        <button class="addr-search-btn" onclick="searchAddr('home-addr')"><i class="ti ti-search"></i> 주소 찾기</button>
+      </div>
+      <input type="text" id="home-addr-detail" placeholder="상세주소 (선택, 예: 101동 502호)">
+      <p class="home-inline-note" id="home-inline-note-depart" style="display:none;">※ 직퇴에서도 위 자택 주소가 사용됩니다.</p>
     </div>
   </div>
 
   <div class="section-card no-print">
-    <p class="section-title"><i class="ti ti-map-pin"></i>방문지 (방문 순서대로)</p>
-    <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 12px;">하루 동안 방문할 모든 출장지를 순서대로 입력하세요.</p>
+    <p class="section-title"><i class="ti ti-building"></i> 회사 주소 <i class="ti ti-lock-filled lock-icon"></i></p>
+    <div class="fixed-display" id="office-addr-display">서울특별시 중구 청계천로 100 시그니처타워 서관</div>
+  </div>
+
+  <div class="section-card no-print">
+    <p class="section-title"><i class="ti ti-map-pin"></i> 출장지 (방문 순서대로)<span class="req">*</span></p>
+    <p style="font-size: 11px; color: var(--gray-500); margin: 0 0 14px; letter-spacing: 0.04em;">하루 동안 방문할 모든 출장지를 순서대로 입력하세요.</p>
     <div id="visits-container"></div>
-    <button id="add-visit-btn" class="btn-sm" style="width: 100%; margin-top: 8px;"><i class="ti ti-plus"></i> 방문지 추가</button>
+    <button id="add-visit-btn" class="btn-add" style="margin-top: 8px;"><i class="ti ti-plus"></i> 출장지 추가</button>
   </div>
 
   <div class="section-card no-print">
-    <p class="section-title"><i class="ti ti-sunset"></i>퇴근 형태</p>
+    <p class="section-title"><i class="ti ti-sunset"></i> 퇴근 형태</p>
     <div class="radio-group">
-      <div class="radio-card" data-value="via-office" onclick="selectReturn('via-office')">
-        <p class="radio-card-title"><i class="ti ti-building"></i> 회사 복귀</p>
-        <p class="radio-card-desc">마지막 방문지→회사→집<br>(마지막~회사만 인정)</p>
+      <div class="radio-card selected" data-value="via-office" onclick="selectReturn('via-office')">
+        <div class="radio-circle"></div>
+        <div class="radio-content">
+          <p class="radio-card-title">회사 복귀 후 퇴근</p>
+          <p class="radio-card-desc">마지막 출장지→회사→집<br>마지막~회사 거리 인정</p>
+        </div>
       </div>
-      <div class="radio-card selected" data-value="direct" onclick="selectReturn('direct')">
-        <p class="radio-card-title"><i class="ti ti-home-2"></i> 직퇴</p>
-        <p class="radio-card-desc">마지막 방문지→집 직행<br>(min(마지막~집, 마지막~회사))</p>
+      <div class="radio-card" data-value="direct" onclick="selectReturn('direct')">
+        <div class="radio-circle"></div>
+        <div class="radio-content">
+          <p class="radio-card-title">직퇴</p>
+          <p class="radio-card-desc">마지막 출장지→집 직행<br>집/회사 도착 중 짧은 거리</p>
+        </div>
       </div>
+    </div>
+    <div class="home-inline" id="home-inline-return">
+      <p class="home-inline-title"><i class="ti ti-home" style="font-size:11px;"></i> 자택 주소 입력</p>
+      <div class="addr-input-wrap mb-8">
+        <input type="text" id="home-addr-2" placeholder="주소 찾기 버튼 클릭" readonly>
+        <button class="addr-search-btn" onclick="searchAddr('home-addr-2')"><i class="ti ti-search"></i> 주소 찾기</button>
+      </div>
+      <input type="text" id="home-addr-2-detail" placeholder="상세주소 (선택, 예: 101동 502호)">
+    </div>
+    <div class="home-inline" id="home-inline-share">
+      <p class="home-inline-title"><i class="ti ti-info-circle" style="font-size:11px;"></i> 자택 주소 자동 적용</p>
+      <p style="font-size: 12px; color: var(--gray-900); margin: 0;">위 "출장지 방문 형태"에서 입력한 자택 주소가 직퇴에도 동일하게 적용됩니다.</p>
     </div>
   </div>
 
   <div class="section-card no-print">
-    <button id="auto-calc-btn"><i class="ti ti-map-search"></i> 모든 거리 자동 조회</button>
-    <p id="distance-source" style="font-size: 11px; color: var(--text-tertiary); margin: 8px 0 0; text-align: center;"></p>
-    <div id="route-summary" style="display: none; margin-top: 12px;"></div>
+    <button id="auto-calc-btn" class="btn"><i class="ti ti-map-search"></i> 모든 거리 자동 조회</button>
+    <p id="distance-source"></p>
+    <div id="route-summary" style="display: none;"></div>
   </div>
 
   <div class="section-card no-print">
-    <p class="section-title"><i class="ti ti-receipt"></i>부대비용 & 영수증</p>
-    <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 12px;">금액 입력 후 영수증 이미지를 첨부하면 결과 화면에 같이 표시됩니다. (선택)</p>
+    <p class="section-title"><i class="ti ti-receipt"></i> 부대비용 & 영수증</p>
+    <p style="font-size: 11px; color: var(--gray-500); margin: 0 0 14px; letter-spacing: 0.04em;">금액 입력 후 영수증 이미지를 첨부하면 결과 화면에 같이 표시됩니다. (선택)</p>
     <div class="grid-2">
       <div>
         <label class="field-label">통행료 (원)</label>
         <input type="number" id="toll" min="0" step="100" value="0">
         <div class="receipt-upload" id="toll-upload-btn" onclick="document.getElementById('toll-receipt').click()">
           <input type="file" id="toll-receipt" accept="image/*" style="display: none;">
-          <span style="font-size: 12px; color: var(--text-secondary);"><i class="ti ti-photo-plus"></i> 영수증 첨부</span>
+          <span><i class="ti ti-photo-plus"></i> 영수증 첨부</span>
         </div>
         <div id="toll-receipt-preview" class="receipt-preview" style="display: none;">
           <img id="toll-receipt-img">
-          <button class="receipt-remove" onclick="removeReceipt('toll')"><i class="ti ti-x"></i></button>
+          <button class="receipt-remove" onclick="removeReceipt('toll')"><i class="ti ti-x" style="font-size:12px;"></i></button>
         </div>
       </div>
       <div>
@@ -223,67 +556,40 @@
         <input type="number" id="parking" min="0" step="100" value="0">
         <div class="receipt-upload" id="parking-upload-btn" onclick="document.getElementById('parking-receipt').click()">
           <input type="file" id="parking-receipt" accept="image/*" style="display: none;">
-          <span style="font-size: 12px; color: var(--text-secondary);"><i class="ti ti-photo-plus"></i> 영수증 첨부</span>
+          <span><i class="ti ti-photo-plus"></i> 영수증 첨부</span>
         </div>
         <div id="parking-receipt-preview" class="receipt-preview" style="display: none;">
           <img id="parking-receipt-img">
-          <button class="receipt-remove" onclick="removeReceipt('parking')"><i class="ti ti-x"></i></button>
+          <button class="receipt-remove" onclick="removeReceipt('parking')"><i class="ti ti-x" style="font-size:12px;"></i></button>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="section-card no-print" id="settings-card">
-    <div class="settings-header" id="settings-header">
-      <p class="section-title" style="margin: 0;"><i class="ti ti-lock"></i>관리자 설정</p>
-      <span id="settings-toggle" style="font-size: 12px; color: var(--text-secondary);">잠금 해제 ▶</span>
-    </div>
-
-    <div id="settings-body" style="display: none; margin-top: 16px;">
-      <p style="font-size: 13px; font-weight: 500; margin: 0 0 4px;">회사 주소</p>
-      <p style="font-size: 11px; color: var(--text-tertiary); margin: 0 0 8px;">회사 이전 시 변경. 변경하면 모든 직원에게 적용됩니다.</p>
-      <div class="addr-input-wrap mb-8">
-        <input type="text" id="cfg-office-addr" placeholder="주소 찾기 클릭" readonly>
-        <button class="addr-search-btn" onclick="searchAddr('cfg-office-addr')"><i class="ti ti-search"></i> 주소 찾기</button>
-      </div>
-      <input type="text" id="cfg-office-addr-detail" placeholder="상세주소 (예: 시그니처타워 서관)" class="mb-16">
-
-      <p style="font-size: 13px; font-weight: 500; margin: 0 0 4px;">오피넷 유가 단가</p>
-      <p style="font-size: 11px; color: var(--text-tertiary); margin: 0 0 8px;">페이지 로드 시 자동 갱신. 수동 갱신도 가능. <a href="https://www.opinet.co.kr" target="_blank">오피넷</a></p>
-      <button id="fetch-opinet-btn" class="btn-sm mb-8"><i class="ti ti-refresh"></i> 지금 유가 새로 가져오기</button>
-      <div class="grid-3 mb-8">
-        <div><label class="field-label">휘발유 (원/L)</label><input type="number" id="cfg-gas" min="0" step="1" value="1700"></div>
-        <div><label class="field-label">경유 (원/L)</label><input type="number" id="cfg-diesel" min="0" step="1" value="1550"></div>
-        <div><label class="field-label">LPG (원/L)</label><input type="number" id="cfg-lpg" min="0" step="1" value="1100"></div>
-      </div>
-      <p id="opinet-status" style="font-size: 11px; color: var(--text-tertiary); margin: 0 0 16px;"></p>
-
-      <p style="font-size: 13px; font-weight: 500; margin: 0 0 4px;">연료별 표준 연비 (km/L)</p>
-      <p style="font-size: 11px; color: var(--text-tertiary); margin: 0 0 8px;">기본값: 공무원 여비업무 처리 기준 (한국석유공사 오피넷 출장유류비 계산기 명시 기준)</p>
-      <div class="grid-4 mb-16">
-        <div><label class="field-label">휘발유</label><input type="number" id="cfg-mileage-gas" min="0" step="0.01" value="11.97"></div>
-        <div><label class="field-label">경유</label><input type="number" id="cfg-mileage-diesel" min="0" step="0.01" value="12.52"></div>
-        <div><label class="field-label">LPG</label><input type="number" id="cfg-mileage-lpg" min="0" step="0.01" value="8.83"></div>
-        <div><label class="field-label">하이브리드</label><input type="number" id="cfg-mileage-hybrid" min="0" step="0.1" value="18"></div>
-      </div>
-
-      <p style="font-size: 13px; font-weight: 500; margin: 0 0 4px;">보정계수</p>
-      <p style="font-size: 11px; color: var(--text-tertiary); margin: 0 0 8px;">차량 감가·소모품·정비비 등 유지비 반영 (일반적으로 1.3~1.5)</p>
-      <input type="number" id="cfg-mult" min="1" max="2" step="0.1" value="1.3" class="mb-16">
-
-      <button id="save-settings-btn" class="btn-primary">설정 저장 후 잠금</button>
-    </div>
+  <div class="warning-banner no-print" id="validation-error" style="display: none;">
+    <i class="ti ti-alert-triangle"></i> <span id="validation-error-msg"></span>
   </div>
 
-  <button id="calc-btn" class="btn-primary no-print" style="margin-bottom: 16px;"><i class="ti ti-calculator"></i> 계산하기</button>
+  <button id="calc-btn" class="btn-primary no-print" style="margin-bottom: 16px;"><i class="ti ti-file-text"></i> 기안 만들기</button>
 
   <div id="result-wrap" style="display: none;">
     <div class="info-banner no-print"><i class="ti ti-camera"></i> 아래 영역을 캡쳐하여 Flex 지출결의서에 첨부하세요</div>
 
     <div id="capture-area" class="capture-area">
       <div class="capture-header">
-        <p style="font-size: 16px; font-weight: 500; margin: 0;">출장 유류비 산정서</p>
-        <p style="font-size: 11px; color: #777; margin: 4px 0 0;" id="capture-date"></p>
+        <p class="capture-header-title">출장 유류비 산정서</p>
+        <p class="capture-header-date" id="capture-date"></p>
+      </div>
+
+      <div class="capture-rules">
+        <p class="capture-rules-title"><i class="ti ti-clipboard-text" style="font-size:11px;"></i> 출장 유류비 산정 사규 요약</p>
+        <ol>
+          <li>통근거리(자택~회사)는 출장거리에서 제외함</li>
+          <li>직출/직퇴 시: 자택 기준 경로와 회사 기준 경로 중 <strong>짧은 거리</strong>를 인정함</li>
+          <li>표준 연비: 공무원 여비업무 처리 기준 (한국석유공사 오피넷 명시)</li>
+          <li>유가: 한국석유공사 오피넷 일별 전국 평균 판매가</li>
+          <li>보정계수 1.3 적용 (차량 감가·소모품·정비비 등 유지비 반영)</li>
+        </ol>
       </div>
 
       <div class="capture-section">
@@ -293,7 +599,7 @@
           <tr><td class="label">출장일자</td><td id="cap-date"></td></tr>
           <tr><td class="label">출장 목적</td><td id="cap-purpose"></td></tr>
           <tr><td class="label">차량</td><td id="cap-vehicle"></td></tr>
-          <tr><td class="label">출근/퇴근</td><td id="cap-pattern"></td></tr>
+          <tr><td class="label">방문/퇴근</td><td id="cap-pattern"></td></tr>
         </table>
       </div>
 
@@ -301,14 +607,14 @@
         <p class="capture-section-title">2. 이동 경로 및 거리 산정</p>
         <table class="capture-route-table">
           <thead>
-            <tr><th>구간</th><th style="text-align:right;">실거리</th><th style="text-align:right;">인정</th><th>비고</th></tr>
+            <tr><th>구간</th><th style="text-align:right;">실거리</th><th style="text-align:right;">인정거리</th><th>산정 사유</th></tr>
           </thead>
           <tbody id="cap-route-tbody"></tbody>
           <tfoot>
-            <tr style="font-weight: 500;"><td>총 인정거리</td><td></td><td class="km" id="cap-total-km"></td><td></td></tr>
+            <tr><td>총 인정거리</td><td></td><td class="km" id="cap-total-km"></td><td></td></tr>
           </tfoot>
         </table>
-        <p style="font-size: 10px; color: #888; margin: 6px 0 0;">※ 사규: 통근거리(집~회사) 제외. 직출/직퇴 시 실거리와 회사기준 중 짧은 거리 인정.</p>
+        <p class="capture-total-sum" id="cap-total-sum"></p>
       </div>
 
       <div class="capture-section">
@@ -321,8 +627,8 @@
         <p class="capture-section-title">4. 지급 내역</p>
         <table class="capture-total-table">
           <tr><td>유류비</td><td style="text-align: right;" id="cap-fuel"></td></tr>
-          <tr><td>통행료 <span id="cap-toll-mark" class="receipt-attached-mark" style="display:none;">(영수증 첨부)</span></td><td style="text-align: right;" id="cap-toll"></td></tr>
-          <tr><td>주차비 <span id="cap-parking-mark" class="receipt-attached-mark" style="display:none;">(영수증 첨부)</span></td><td style="text-align: right;" id="cap-parking"></td></tr>
+          <tr><td>통행료 <span id="cap-toll-mark" class="receipt-attached-mark" style="display:none;">영수증 첨부</span></td><td style="text-align: right;" id="cap-toll"></td></tr>
+          <tr><td>주차비 <span id="cap-parking-mark" class="receipt-attached-mark" style="display:none;">영수증 첨부</span></td><td style="text-align: right;" id="cap-parking"></td></tr>
           <tr class="total"><td>총 지급액</td><td style="text-align: right;" id="cap-total"></td></tr>
         </table>
       </div>
@@ -343,17 +649,57 @@
     </div>
 
     <div class="grid-2 no-print" style="margin-top: 12px;">
-      <button id="copy-btn"><i class="ti ti-copy"></i> 텍스트 복사</button>
-      <button id="reset-btn" style="color: var(--text-secondary);"><i class="ti ti-refresh"></i> 초기화</button>
+      <button id="copy-btn" class="btn"><i class="ti ti-copy"></i> 텍스트 복사</button>
+      <button id="reset-btn" class="btn"><i class="ti ti-refresh"></i> 초기화</button>
     </div>
   </div>
 
 </div>
 
+<div class="modal-overlay no-print" id="settings-modal">
+  <div class="modal-content">
+    <button class="modal-close" id="close-settings-btn"><i class="ti ti-x"></i></button>
+    <p class="modal-title"><i class="ti ti-settings"></i> 관리자 설정</p>
+
+    <p style="font-size: 11px; font-weight: 700; margin: 0 0 6px; letter-spacing: 0.08em; text-transform: uppercase;">회사 주소</p>
+    <p style="font-size: 11px; color: var(--gray-500); margin: 0 0 10px;">회사 이전 시 변경. 변경하면 모든 직원에게 적용됩니다.</p>
+    <div class="addr-input-wrap mb-8">
+      <input type="text" id="cfg-office-addr" placeholder="주소 찾기 클릭" readonly>
+      <button class="addr-search-btn" onclick="searchAddr('cfg-office-addr')"><i class="ti ti-search"></i> 주소 찾기</button>
+    </div>
+    <input type="text" id="cfg-office-addr-detail" placeholder="상세주소 (예: 시그니처타워 서관)" class="mb-16">
+
+    <p class="sec-divider">오피넷 유가 단가 (한국석유공사 전국 주유소 평균가격)</p>
+    <p style="font-size: 11px; color: var(--gray-500); margin: 0 0 10px;">페이지 로드 시 자동 갱신. <a href="https://www.opinet.co.kr" target="_blank">오피넷</a></p>
+    <button id="fetch-opinet-btn" class="btn-sm mb-8"><i class="ti ti-refresh"></i> 지금 유가 새로 가져오기</button>
+    <div class="grid-3 mb-8">
+      <div><label class="field-label">휘발유 (원/L)</label><input type="number" id="cfg-gas" min="0" step="1" value="1700"></div>
+      <div><label class="field-label">자동차용경유 (원/L)</label><input type="number" id="cfg-diesel" min="0" step="1" value="1550"></div>
+      <div><label class="field-label">자동차용부탄 (원/L)</label><input type="number" id="cfg-lpg" min="0" step="1" value="1100"></div>
+    </div>
+    <p id="opinet-status"></p>
+
+    <p class="sec-divider">연료별 표준 연비 (km/L)</p>
+    <p style="font-size: 11px; color: var(--gray-500); margin: 0 0 10px;">기본값: 공무원 여비업무 처리 기준 (한국석유공사 오피넷 출장유류비 계산기 명시)</p>
+    <div class="grid-4 mb-16">
+      <div><label class="field-label">휘발유</label><input type="number" id="cfg-mileage-gas" min="0" step="0.01" value="11.97"></div>
+      <div><label class="field-label">경유</label><input type="number" id="cfg-mileage-diesel" min="0" step="0.01" value="12.52"></div>
+      <div><label class="field-label">LPG</label><input type="number" id="cfg-mileage-lpg" min="0" step="0.01" value="8.83"></div>
+      <div><label class="field-label">하이브리드</label><input type="number" id="cfg-mileage-hybrid" min="0" step="0.1" value="18"></div>
+    </div>
+
+    <p class="sec-divider">보정계수</p>
+    <p style="font-size: 11px; color: var(--gray-500); margin: 0 0 10px;">차량 감가·소모품·정비비 등 유지비 반영 (일반적으로 1.3~1.5)</p>
+    <input type="number" id="cfg-mult" min="1" max="2" step="0.1" value="1.3" class="mb-16">
+
+    <button id="save-settings-btn" class="btn-primary">설정 저장 후 닫기</button>
+  </div>
+</div>
+
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script>
 // ============================================================
-const KAKAO_REST_API_KEY = "1652cd767cbc3a6a2c1af26e73d7890b";
+const KAKAO_REST_API_KEY = "여기에_본인_카카오_REST_API_키_입력";
 const WORKER_OPINET_URL = "https://wakefuel.jslee-43a.workers.dev/opinet";
 const DEFAULT_OFFICE_ADDR = "서울특별시 중구 청계천로 100";
 const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
@@ -364,21 +710,48 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
   const fmt = (n) => Math.round(n).toLocaleString('ko-KR');
   const ADMIN_PW = '2580';
   let lastCalc = null;
-  let settingsUnlocked = false;
   let officeCoord = null;
   let receipts = { toll: null, parking: null };
   let visits = [];
-  let departType = 'direct';
-  let returnType = 'direct';
+  let departType = 'via-office';
+  let returnType = 'via-office';
   let coordCache = {};
 
   const FUEL_LABELS = { gasoline: '휘발유', diesel: '경유', lpg: 'LPG', hybrid: '하이브리드' };
-  const OFFICIAL_FUEL_LABELS = { gasoline: '휘발유', diesel: '경유', lpg: 'LPG' };
+  // 오피넷 공식 명칭 (PRODNM 그대로)
+  const OFFICIAL_FUEL_NAMES = { gasoline: '휘발유', diesel: '자동차용경유', lpg: '자동차용부탄' };
 
   function getOfficeAddr() {
     const base = localStorage.getItem('tc-office-addr') || DEFAULT_OFFICE_ADDR;
     const detail = localStorage.getItem('tc-office-addr-detail') || DEFAULT_OFFICE_ADDR_DETAIL;
     return { base, detail, full: detail ? `${base} ${detail}` : base };
+  }
+
+  function updateHomeAddrVisibility() {
+    const departDirect = departType === 'direct';
+    const returnDirect = returnType === 'direct';
+
+    if (departDirect && returnDirect) {
+      $('home-inline-depart').classList.add('show');
+      $('home-inline-return').classList.remove('show');
+      $('home-inline-share').classList.add('show');
+      $('home-inline-note-depart').style.display = 'block';
+    } else if (departDirect && !returnDirect) {
+      $('home-inline-depart').classList.add('show');
+      $('home-inline-return').classList.remove('show');
+      $('home-inline-share').classList.remove('show');
+      $('home-inline-note-depart').style.display = 'none';
+    } else if (!departDirect && returnDirect) {
+      $('home-inline-depart').classList.remove('show');
+      $('home-inline-return').classList.add('show');
+      $('home-inline-share').classList.remove('show');
+      $('home-inline-note-depart').style.display = 'none';
+    } else {
+      $('home-inline-depart').classList.remove('show');
+      $('home-inline-return').classList.remove('show');
+      $('home-inline-share').classList.remove('show');
+      $('home-inline-note-depart').style.display = 'none';
+    }
   }
 
   function load() {
@@ -388,6 +761,11 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
         const v = localStorage.getItem('tc-' + k);
         if (v !== null && $(k)) $(k).value = v;
       });
+      const homeAddr = localStorage.getItem('tc-home-addr');
+      const homeDetail = localStorage.getItem('tc-home-addr-detail');
+      if (homeAddr) $('home-addr-2').value = homeAddr;
+      if (homeDetail) $('home-addr-2-detail').value = homeDetail;
+
       const admin = ['cfg-gas','cfg-diesel','cfg-lpg','cfg-mileage-gas','cfg-mileage-diesel','cfg-mileage-lpg','cfg-mileage-hybrid','cfg-mult'];
       admin.forEach(k => {
         const v = localStorage.getItem('tc-' + k);
@@ -404,6 +782,8 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
       if (lat && lng) {
         $('home-addr').dataset.lat = lat;
         $('home-addr').dataset.lng = lng;
+        $('home-addr-2').dataset.lat = lat;
+        $('home-addr-2').dataset.lng = lng;
       }
       const offLat = localStorage.getItem('tc-office-lat');
       const offLng = localStorage.getItem('tc-office-lng');
@@ -414,11 +794,31 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
   }
   function save(key, value) { try { localStorage.setItem('tc-' + key, value); } catch (e) {} }
 
+  // 오피넷 기준일 (YYYYMMDD → YYYY-MM-DD)
+  function getOpinetTradeDate() {
+    return localStorage.getItem('tc-opinet-trade-date') || '';
+  }
+  function formatTradeDate(dt) {
+    if (!dt || dt.length < 8) return '';
+    return `${dt.slice(0,4)}-${dt.slice(4,6)}-${dt.slice(6,8)}`;
+  }
+
   function updateFuelInfo() {
     const fuel = $('fuel-type').value;
     const mileage = getMileage(fuel);
     const price = getFuelPrice(fuel);
-    $('fuel-info').textContent = `현재 ${FUEL_LABELS[fuel]} 적용: 표준 연비 ${mileage}km/L · 단가 ${fmt(price)}원/L`;
+    const tradeDate = formatTradeDate(getOpinetTradeDate());
+    
+    const officialName = fuel === 'hybrid' ? '휘발유' : OFFICIAL_FUEL_NAMES[fuel];
+    const dateText = tradeDate ? `${tradeDate} 전국평균` : '전국평균';
+    
+    let html = `<span class="fuel-info-line"><strong>표준 연비:</strong> ${mileage} km/L <span class="fuel-info-source">— 공무원 여비업무 처리 기준 (한국석유공사 오피넷)</span></span>`;
+    if (fuel === 'hybrid') {
+      html += `<span class="fuel-info-line"><strong>유가:</strong> ${fmt(price)} 원/L <span class="fuel-info-source">— 한국석유공사 오피넷 ${officialName} ${dateText} (하이브리드는 휘발유 단가 적용)</span></span>`;
+    } else {
+      html += `<span class="fuel-info-line"><strong>유가:</strong> ${fmt(price)} 원/L <span class="fuel-info-source">— 한국석유공사 오피넷 ${officialName} ${dateText}</span></span>`;
+    }
+    $('fuel-info').innerHTML = html;
   }
   function getMileage(fuel) {
     const id = 'cfg-mileage-' + (fuel === 'gasoline' ? 'gas' : fuel);
@@ -441,12 +841,18 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
         save('cfg-gas', $('cfg-gas').value);
         save('cfg-diesel', $('cfg-diesel').value);
         save('cfg-lpg', $('cfg-lpg').value);
-        const tradeDate = data.tradeDate ? `${data.tradeDate.slice(0,4)}-${data.tradeDate.slice(4,6)}-${data.tradeDate.slice(6,8)}` : '';
-        const msg = `✓ 오피넷 자동 갱신 (기준일: ${tradeDate}, 갱신: ${new Date().toLocaleString('ko-KR')})`;
+        
+        // 기준일 저장
+        if (data.tradeDate) {
+          save('opinet-trade-date', data.tradeDate);
+        }
+        
+        const tradeDate = formatTradeDate(data.tradeDate);
+        const msg = `✓ 한국석유공사 오피넷 ${tradeDate} 전국평균 자동 갱신 (갱신: ${new Date().toLocaleString('ko-KR')})`;
         $('opinet-status').textContent = msg;
         save('opinet-status', msg);
         updateFuelInfo();
-        if (showAlert) alert(`유가 갱신 완료\n휘발유: ${fmt(data.prices.gasoline)}원\n경유: ${fmt(data.prices.diesel)}원\nLPG: ${fmt(data.prices.lpg)}원\n기준일: ${tradeDate}`);
+        if (showAlert) alert(`유가 갱신 완료 (한국석유공사 오피넷 ${tradeDate} 전국평균)\n\n휘발유: ${fmt(data.prices.gasoline)}원/L\n자동차용경유: ${fmt(data.prices.diesel)}원/L\n자동차용부탄(LPG): ${fmt(data.prices.lpg)}원/L`);
         return true;
       } else { throw new Error(data.error || '데이터 없음'); }
     } catch (e) {
@@ -487,7 +893,18 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
         const el = $(targetId);
         el.value = addr;
         if (el.dataset) { el.dataset.lat = ''; el.dataset.lng = ''; }
-        if (targetId === 'home-addr' || targetId === 'cfg-office-addr') {
+
+        if (targetId === 'home-addr' || targetId === 'home-addr-2') {
+          $('home-addr').value = addr;
+          $('home-addr-2').value = addr;
+          $('home-addr').dataset.lat = '';
+          $('home-addr').dataset.lng = '';
+          $('home-addr-2').dataset.lat = '';
+          $('home-addr-2').dataset.lng = '';
+          save('home-addr', addr);
+          localStorage.removeItem('tc-home-addr-lat');
+          localStorage.removeItem('tc-home-addr-lng');
+        } else if (targetId === 'cfg-office-addr') {
           save(targetId, addr);
           localStorage.removeItem('tc-' + targetId + '-lat');
           localStorage.removeItem('tc-' + targetId + '-lng');
@@ -566,15 +983,18 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
   }
 
   async function getHomeCoord() {
-    const el = $('home-addr');
-    const addr = el.value.trim();
+    let addr = $('home-addr').value.trim() || $('home-addr-2').value.trim();
     if (!addr) throw new Error('자택 주소가 없습니다');
+
+    const el = $('home-addr').value.trim() ? $('home-addr') : $('home-addr-2');
     if (el.dataset.lat && el.dataset.lng) {
       return { lat: parseFloat(el.dataset.lat), lng: parseFloat(el.dataset.lng) };
     }
     const coord = await kakaoGeocode(addr);
-    el.dataset.lat = coord.lat;
-    el.dataset.lng = coord.lng;
+    $('home-addr').dataset.lat = coord.lat;
+    $('home-addr').dataset.lng = coord.lng;
+    $('home-addr-2').dataset.lat = coord.lat;
+    $('home-addr-2').dataset.lng = coord.lng;
     save('home-addr-lat', coord.lat);
     save('home-addr-lng', coord.lng);
     return coord;
@@ -586,7 +1006,7 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     renderVisits();
   }
   window.removeVisit = function(id) {
-    if (visits.length <= 1) { alert('최소 1개의 방문지가 필요합니다.'); return; }
+    if (visits.length <= 1) { alert('최소 1개의 출장지가 필요합니다.'); return; }
     visits = visits.filter(v => v.id !== id);
     renderVisits();
   };
@@ -612,7 +1032,7 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     container.innerHTML = visits.map((v, idx) => `
       <div class="visit-card">
         <div class="visit-card-header">
-          <p class="visit-card-title">방문지 ${idx + 1}</p>
+          <p class="visit-card-title">출장지 ${idx + 1}</p>
           <div class="visit-card-actions">
             ${idx > 0 ? `<button class="icon-btn" onclick="moveVisit('${v.id}', -1)" title="위로"><i class="ti ti-arrow-up" style="font-size:12px;"></i></button>` : ''}
             ${idx < visits.length - 1 ? `<button class="icon-btn" onclick="moveVisit('${v.id}', 1)" title="아래로"><i class="ti ti-arrow-down" style="font-size:12px;"></i></button>` : ''}
@@ -637,6 +1057,7 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
         });
       }
     });
+    updateHomeAddrVisibility();
   };
   window.selectReturn = function(value) {
     returnType = value;
@@ -647,14 +1068,71 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
         });
       }
     });
+    updateHomeAddrVisibility();
   };
+
+  function validate() {
+    clearValidationErrors();
+    const errors = [];
+
+    if (!$('applicant').value.trim()) { errors.push('신청자명'); $('applicant').classList.add('err-field'); }
+    if (!$('department').value.trim()) { errors.push('소속/직급'); $('department').classList.add('err-field'); }
+    if (!$('trip-date').value) { errors.push('출장일자'); $('trip-date').classList.add('err-field'); }
+    if (!$('purpose').value.trim()) { errors.push('출장 목적'); $('purpose').classList.add('err-field'); }
+    if (!$('carnum').value.trim()) { errors.push('차량번호'); $('carnum').classList.add('err-field'); }
+
+    const needsHome = departType === 'direct' || returnType === 'direct';
+    if (needsHome) {
+      const homeAddr = $('home-addr').value.trim() || $('home-addr-2').value.trim();
+      if (!homeAddr) {
+        errors.push('자택 주소');
+        if (departType === 'direct') $('home-addr').classList.add('err-field');
+        if (returnType === 'direct') $('home-addr-2').classList.add('err-field');
+      }
+    }
+
+    syncVisitsFromInputs();
+    if (visits.length === 0 || !visits[0].addr) {
+      errors.push('출장지 (최소 1개)');
+    } else {
+      const emptyVisits = visits.filter(v => !v.addr);
+      if (emptyVisits.length > 0) {
+        errors.push('빈 출장지 주소');
+      }
+    }
+
+    if (!window._lastDistance && errors.length === 0) {
+      errors.push('"모든 거리 자동 조회" 버튼을 먼저 실행해주세요');
+    }
+
+    if (errors.length > 0) {
+      $('validation-error-msg').textContent = '필수 입력값을 확인해주세요: ' + errors.join(', ');
+      $('validation-error').style.display = 'block';
+      $('validation-error').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return false;
+    }
+    return true;
+  }
+
+  function clearValidationErrors() {
+    document.querySelectorAll('.err-field').forEach(el => el.classList.remove('err-field'));
+    $('validation-error').style.display = 'none';
+  }
 
   async function autoCalcDistance() {
     syncVisitsFromInputs();
-    if (!$('home-addr').value.trim()) { alert('자택 주소를 입력해주세요.'); return; }
-    if (visits.length === 0 || !visits[0].addr) { alert('최소 1개의 방문지를 입력해주세요.'); return; }
+    
+    const needsHome = departType === 'direct' || returnType === 'direct';
+    if (needsHome) {
+      const homeAddr = $('home-addr').value.trim() || $('home-addr-2').value.trim();
+      if (!homeAddr) {
+        alert('직출 또는 직퇴 선택 시 자택 주소를 입력해주세요.');
+        return;
+      }
+    }
+    if (visits.length === 0 || !visits[0].addr) { alert('최소 1개의 출장지를 입력해주세요.'); return; }
     for (const v of visits) {
-      if (!v.addr) { alert('모든 방문지 주소를 입력해주세요.'); return; }
+      if (!v.addr) { alert('모든 출장지 주소를 입력해주세요.'); return; }
     }
 
     const btn = $('auto-calc-btn');
@@ -664,7 +1142,7 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     $('route-summary').style.display = 'none';
 
     try {
-      const home = await getHomeCoord();
+      const home = needsHome ? await getHomeCoord() : null;
       const office = await getOfficeCoord();
       for (const v of visits) {
         if (!v.lat || !v.lng) {
@@ -676,21 +1154,24 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
       const firstVisit = { lat: visits[0].lat, lng: visits[0].lng };
       const lastVisit = { lat: visits[visits.length-1].lat, lng: visits[visits.length-1].lng };
 
-      let departKm, departLogic, departActualKm;
+      let departKm, departLogic, departActualKm, departReason;
       if (departType === 'via-office') {
         departKm = await distance(office, firstVisit);
         departActualKm = departKm;
-        departLogic = `회사 경유: 회사→방문지1 = ${departKm.toFixed(1)}km (집~회사 통근거리 제외)`;
+        departLogic = `회사 출근 후 출장지로: 회사→출장지1 = ${departKm.toFixed(1)}km (집~회사 통근거리 제외)`;
+        departReason = '회사 출근 후 출발 (통근거리 제외)';
       } else {
         const dHome = await distance(home, firstVisit);
         const dOffice = await distance(office, firstVisit);
         departActualKm = dHome;
         if (dHome <= dOffice) {
           departKm = dHome;
-          departLogic = `직출: 집→방문지1 = ${dHome.toFixed(1)}km ≤ 회사→방문지1 = ${dOffice.toFixed(1)}km → 실거리 인정`;
+          departLogic = `직출: 집~출장지1(${dHome.toFixed(1)}km)이 회사~출장지1(${dOffice.toFixed(1)}km)보다 짧아 ${dHome.toFixed(1)}km 인정`;
+          departReason = `집 경로(${dHome.toFixed(1)}km)가 회사 경로(${dOffice.toFixed(1)}km)보다 짧아 인정`;
         } else {
           departKm = dOffice;
-          departLogic = `직출: 집→방문지1 = ${dHome.toFixed(1)}km > 회사→방문지1 = ${dOffice.toFixed(1)}km → 회사기준 ${dOffice.toFixed(1)}km만 인정`;
+          departLogic = `직출: 회사~출장지1(${dOffice.toFixed(1)}km)이 집~출장지1(${dHome.toFixed(1)}km)보다 짧아 ${dOffice.toFixed(1)}km 인정`;
+          departReason = `회사 경로(${dOffice.toFixed(1)}km)가 집 경로(${dHome.toFixed(1)}km)보다 짧아 회사기준 적용`;
         }
       }
 
@@ -704,30 +1185,33 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
         interSegments.push({ from: i+1, to: i+2, km: d });
       }
 
-      let returnKm, returnLogic, returnActualKm;
+      let returnKm, returnLogic, returnActualKm, returnReason;
       if (returnType === 'via-office') {
         returnKm = await distance(lastVisit, office);
         returnActualKm = returnKm;
-        returnLogic = `회사 복귀: 방문지${visits.length}→회사 = ${returnKm.toFixed(1)}km (회사~집 통근거리 제외)`;
+        returnLogic = `회사 복귀 후 퇴근: 출장지${visits.length}→회사 = ${returnKm.toFixed(1)}km (회사~집 통근거리 제외)`;
+        returnReason = '회사 복귀 후 퇴근 (통근거리 제외)';
       } else {
         const dHome = await distance(lastVisit, home);
         const dOffice = await distance(lastVisit, office);
         returnActualKm = dHome;
         if (dHome <= dOffice) {
           returnKm = dHome;
-          returnLogic = `직퇴: 방문지${visits.length}→집 = ${dHome.toFixed(1)}km ≤ 방문지${visits.length}→회사 = ${dOffice.toFixed(1)}km → 실거리 인정`;
+          returnLogic = `직퇴: 출장지${visits.length}~집(${dHome.toFixed(1)}km)이 출장지${visits.length}~회사(${dOffice.toFixed(1)}km)보다 짧아 ${dHome.toFixed(1)}km 인정`;
+          returnReason = `집 경로(${dHome.toFixed(1)}km)가 회사 경로(${dOffice.toFixed(1)}km)보다 짧아 인정`;
         } else {
           returnKm = dOffice;
-          returnLogic = `직퇴: 방문지${visits.length}→집 = ${dHome.toFixed(1)}km > 방문지${visits.length}→회사 = ${dOffice.toFixed(1)}km → 회사기준 ${dOffice.toFixed(1)}km만 인정`;
+          returnLogic = `직퇴: 출장지${visits.length}~회사(${dOffice.toFixed(1)}km)이 출장지${visits.length}~집(${dHome.toFixed(1)}km)보다 짧아 ${dOffice.toFixed(1)}km 인정`;
+          returnReason = `회사 경로(${dOffice.toFixed(1)}km)가 집 경로(${dHome.toFixed(1)}km)보다 짧아 회사기준 적용`;
         }
       }
 
       const totalKm = departKm + interKm + returnKm;
 
       window._lastDistance = {
-        departKm, departLogic, departActualKm,
+        departKm, departLogic, departActualKm, departReason,
         interKm, interSegments,
-        returnKm, returnLogic, returnActualKm,
+        returnKm, returnLogic, returnActualKm, returnReason,
         totalKm,
         home, office, visits: visits.map(v => ({...v}))
       };
@@ -735,12 +1219,12 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
       $('distance-source').textContent = '📍 OSRM 실주행거리 (실패 시 직선거리 추정)';
       
       $('route-summary').innerHTML = `
-        <div style="background: var(--bg-secondary); padding: 12px; border-radius: var(--radius-md); font-size: 12px;">
-          <p style="margin: 0 0 6px; font-weight: 500;">📋 경로 요약</p>
-          <p style="margin: 0 0 4px;">• ${departLogic}</p>
-          ${interSegments.map(s => `<p style="margin: 0 0 4px;">• 방문지${s.from}→${s.to}: ${s.km.toFixed(1)}km</p>`).join('')}
-          <p style="margin: 0 0 4px;">• ${returnLogic}</p>
-          <p style="margin: 8px 0 0; padding-top: 6px; border-top: 1px solid var(--border); font-weight: 500;">총 인정거리: ${totalKm.toFixed(1)} km</p>
+        <div class="route-summary-box">
+          <p class="route-summary-title"><i class="ti ti-route" style="font-size:11px;"></i> 경로 요약</p>
+          <p class="route-summary-line">• ${departLogic}</p>
+          ${interSegments.map(s => `<p class="route-summary-line">• 출장지${s.from}→출장지${s.to}: ${s.km.toFixed(1)}km</p>`).join('')}
+          <p class="route-summary-line">• ${returnLogic}</p>
+          <p class="route-summary-total">총 인정거리: ${getSumExpression()} = ${totalKm.toFixed(1)} km</p>
         </div>
       `;
       $('route-summary').style.display = 'block';
@@ -754,23 +1238,30 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     }
   }
 
+  function getSumExpression() {
+    const d = window._lastDistance;
+    if (!d) return '';
+    const parts = [d.departKm.toFixed(1)];
+    d.interSegments.forEach(s => parts.push(s.km.toFixed(1)));
+    parts.push(d.returnKm.toFixed(1));
+    return parts.join(' + ');
+  }
+
   function calculate() {
-    if (!window._lastDistance) {
-      alert('먼저 "모든 거리 자동 조회"를 실행해주세요.');
-      return;
-    }
+    if (!validate()) return;
 
     syncVisitsFromInputs();
 
-    const applicant = $('applicant').value.trim() || '(미입력)';
-    const department = $('department').value.trim() || '';
-    const tripDate = $('trip-date').value || '(미입력)';
-    const purpose = $('purpose').value.trim() || '(미입력)';
-    const carNumber = $('carnum').value.trim() || '(미입력)';
+    const applicant = $('applicant').value.trim();
+    const department = $('department').value.trim();
+    const tripDate = $('trip-date').value;
+    const purpose = $('purpose').value.trim();
+    const carNumber = $('carnum').value.trim();
     const fuelType = $('fuel-type').value;
     const fuelLabel = FUEL_LABELS[fuelType];
     const mileage = getMileage(fuelType);
     const fuelPrice = getFuelPrice(fuelType);
+    const tradeDate = formatTradeDate(getOpinetTradeDate());
 
     const d = window._lastDistance;
     const multiplier = parseFloat($('cfg-mult').value) || 1.3;
@@ -781,12 +1272,12 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     const parking = parseFloat($('parking').value) || 0;
     const totalCost = adjustedFuelCost + toll + parking;
 
-    const departLabel = departType === 'via-office' ? '회사 경유' : '직출';
-    const returnLabel = returnType === 'via-office' ? '회사 복귀' : '직퇴';
+    const departLabel = departType === 'via-office' ? '회사 출근 후 출장지로' : '직출';
+    const returnLabel = returnType === 'via-office' ? '회사 복귀 후 퇴근' : '직퇴';
 
     lastCalc = {
       applicant, department, tripDate, purpose, carNumber,
-      fuelType, fuelLabel, mileage, fuelPrice, multiplier,
+      fuelType, fuelLabel, mileage, fuelPrice, multiplier, opinetTradeDate: tradeDate,
       departType, returnType, departLabel, returnLabel,
       visits: visits.map(v => ({...v})),
       ...d,
@@ -802,17 +1293,17 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
 
     const rows = [];
     if (departType === 'via-office') {
-      rows.push({ seg: '회사 → 방문지1', actual: d.departKm, recognized: d.departKm, note: '회사 경유' });
+      rows.push({ seg: '회사 → 출장지1', actual: d.departKm, recognized: d.departKm, reason: d.departReason });
     } else {
-      rows.push({ seg: `집 → 방문지1 (직출)`, actual: d.departActualKm, recognized: d.departKm, note: d.departLogic.includes('회사기준') ? '회사기준 적용' : '실거리' });
+      rows.push({ seg: `집 → 출장지1 (직출)`, actual: d.departActualKm, recognized: d.departKm, reason: d.departReason });
     }
     d.interSegments.forEach(s => {
-      rows.push({ seg: `방문지${s.from} → 방문지${s.to}`, actual: s.km, recognized: s.km, note: '' });
+      rows.push({ seg: `출장지${s.from} → 출장지${s.to}`, actual: s.km, recognized: s.km, reason: '출장지 간 실제 이동' });
     });
     if (returnType === 'via-office') {
-      rows.push({ seg: `방문지${visits.length} → 회사`, actual: d.returnKm, recognized: d.returnKm, note: '회사 복귀' });
+      rows.push({ seg: `출장지${visits.length} → 회사`, actual: d.returnKm, recognized: d.returnKm, reason: d.returnReason });
     } else {
-      rows.push({ seg: `방문지${visits.length} → 집 (직퇴)`, actual: d.returnActualKm, recognized: d.returnKm, note: d.returnLogic.includes('회사기준') ? '회사기준 적용' : '실거리' });
+      rows.push({ seg: `출장지${visits.length} → 집 (직퇴)`, actual: d.returnActualKm, recognized: d.returnKm, reason: d.returnReason });
     }
 
     $('cap-route-tbody').innerHTML = rows.map(r => `
@@ -820,28 +1311,28 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
         <td>${r.seg}</td>
         <td class="km">${r.actual.toFixed(1)} km</td>
         <td class="km">${r.recognized.toFixed(1)} km</td>
-        <td style="font-size: 11px; color: #666;">${r.note}</td>
+        <td style="font-size: 11px; color: var(--gray-700);">${r.reason}</td>
       </tr>
     `).join('');
     $('cap-total-km').textContent = `${d.totalKm.toFixed(1)} km`;
+    $('cap-total-sum').textContent = `합산: ${getSumExpression()} = ${d.totalKm.toFixed(1)} km`;
 
     $('cap-formula').innerHTML = `총 인정거리 = <strong>${d.totalKm.toFixed(1)} km</strong><br>
 사용연료 = ${d.totalKm.toFixed(1)} ÷ ${mileage} = ${fuelUsed.toFixed(2)} L<br>
 연료비 = ${fuelUsed.toFixed(2)} L × ${fmt(fuelPrice)}원 = ${fmt(rawFuelCost)}원<br>
 보정 적용 = ${fmt(rawFuelCost)}원 × ${multiplier} = <strong>${fmt(adjustedFuelCost)}원</strong>`;
 
-    // 산정 근거 표시
+    // 산정 근거 (오피넷 공식 명칭 + 기준일 포함)
     let basisText = '';
+    const dateText = tradeDate ? `${tradeDate} 전국평균` : '전국평균';
     if (fuelType === 'hybrid') {
-      basisText = `<strong>산정 근거:</strong><br>
-• 연비 ${mileage}km/L: 회사 자체 기준 (하이브리드는 정부 공식 기준 없음)<br>
-• 유가 ${fmt(fuelPrice)}원/L: 오피넷 휘발유 전국평균 (한국석유공사)<br>
-• 보정계수 ${multiplier}: 차량 감가·소모품·정비비 등 유지비 반영 (회사 기준)`;
+      basisText = `<strong>적용 단가 출처</strong>
+• 연비 ${mileage}km/L: 회사 자체 기준 (하이브리드 정부 공식 기준 없음)<br>
+• 유가 ${fmt(fuelPrice)}원/L: 한국석유공사 오피넷 휘발유 ${dateText} (하이브리드는 휘발유 단가 적용)`;
     } else {
-      basisText = `<strong>산정 근거:</strong><br>
-• 연비 ${mileage}km/L: 공무원 여비업무 처리 기준 ${OFFICIAL_FUEL_LABELS[fuelType]} 연비 (한국석유공사 오피넷 출장유류비 계산기 명시)<br>
-• 유가 ${fmt(fuelPrice)}원/L: 오피넷 ${OFFICIAL_FUEL_LABELS[fuelType]} 전국평균 (한국석유공사)<br>
-• 보정계수 ${multiplier}: 차량 감가·소모품·정비비 등 유지비 반영 (회사 기준)`;
+      basisText = `<strong>적용 단가 출처</strong>
+• 연비 ${mileage}km/L: 공무원 여비업무 처리 기준 ${fuelLabel} 연비 (한국석유공사 오피넷 출장유류비 계산기 명시)<br>
+• 유가 ${fmt(fuelPrice)}원/L: 한국석유공사 오피넷 ${OFFICIAL_FUEL_NAMES[fuelType]} ${dateText}`;
     }
     $('cap-basis').innerHTML = basisText;
 
@@ -864,36 +1355,44 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
   function copyText() {
     if (!lastCalc) return;
     const c = lastCalc;
-    const visitsText = c.visits.map((v, i) => `  방문지${i+1}: ${v.addr}${v.detail ? ' ' + v.detail : ''}`).join('\n');
+    const visitsText = c.visits.map((v, i) => `  출장지${i+1}: ${v.addr}${v.detail ? ' ' + v.detail : ''}`).join('\n');
+    const dateText = c.opinetTradeDate ? `${c.opinetTradeDate} 전국평균` : '전국평균';
     const basisText = c.fuelType === 'hybrid'
-      ? `- 연비 ${c.mileage}km/L: 회사 자체 기준 (하이브리드 정부 공식 기준 없음)\n- 유가 ${fmt(c.fuelPrice)}원/L: 오피넷 휘발유 전국평균\n- 보정계수 ${c.multiplier}: 회사 기준`
-      : `- 연비 ${c.mileage}km/L: 공무원 여비업무 처리 기준 ${OFFICIAL_FUEL_LABELS[c.fuelType]} 연비 (오피넷)\n- 유가 ${fmt(c.fuelPrice)}원/L: 오피넷 ${OFFICIAL_FUEL_LABELS[c.fuelType]} 전국평균\n- 보정계수 ${c.multiplier}: 회사 기준`;
+      ? `- 연비 ${c.mileage}km/L: 회사 자체 기준 (하이브리드 정부 공식 기준 없음)\n- 유가 ${fmt(c.fuelPrice)}원/L: 한국석유공사 오피넷 휘발유 ${dateText}`
+      : `- 연비 ${c.mileage}km/L: 공무원 여비업무 처리 기준 ${c.fuelLabel} 연비 (오피넷)\n- 유가 ${fmt(c.fuelPrice)}원/L: 한국석유공사 오피넷 ${OFFICIAL_FUEL_NAMES[c.fuelType]} ${dateText}`;
 
     const text = `[출장 유류비 산정서]
 작성일: ${new Date().toLocaleDateString('ko-KR')}
+
+[사규 요약]
+① 통근거리(자택~회사)는 출장거리에서 제외
+② 직출/직퇴 시 집 경로와 회사 경로 중 짧은 거리 인정
+③ 표준 연비: 공무원 여비업무 처리 기준 (오피넷 명시)
+④ 유가: 한국석유공사 오피넷 일별 전국 평균
+⑤ 보정계수 1.3 (차량 유지비 반영)
 
 1. 신청 정보
 - 신청자: ${c.applicant}${c.department ? ` (${c.department})` : ''}
 - 출장일자: ${c.tripDate}
 - 출장 목적: ${c.purpose}
 - 차량: ${c.fuelLabel} (${c.mileage}km/L) / ${c.carNumber}
-- 출퇴근: ${c.departLabel} → ${c.returnLabel}
+- 방문/퇴근: ${c.departLabel} → ${c.returnLabel}
 
-2. 방문지
+2. 출장지
 ${visitsText}
 
 3. 거리 산정
 - ${c.departLogic}
-${c.interSegments.map(s => `- 방문지${s.from}→방문지${s.to}: ${s.km.toFixed(1)}km`).join('\n')}
+${c.interSegments.map(s => `- 출장지${s.from}→출장지${s.to}: ${s.km.toFixed(1)}km`).join('\n')}
 - ${c.returnLogic}
-- 총 인정거리: ${c.totalKm.toFixed(1)} km
+- 총 인정거리: ${getSumExpression()} = ${c.totalKm.toFixed(1)} km
 
 4. 유류비 계산
 - 사용연료: ${c.totalKm.toFixed(1)} ÷ ${c.mileage} = ${c.fuelUsed.toFixed(2)} L
 - 연료비: ${c.fuelUsed.toFixed(2)} L × ${fmt(c.fuelPrice)}원 = ${fmt(c.rawFuelCost)}원
 - 보정(×${c.multiplier}): ${fmt(c.adjustedFuelCost)}원
 
-산정 근거:
+적용 단가 출처:
 ${basisText}
 
 5. 지급 내역
@@ -914,8 +1413,8 @@ ${basisText}
     $('purpose').value = '';
     visits = [];
     addVisit();
-    selectDepart('direct');
-    selectReturn('direct');
+    selectDepart('via-office');
+    selectReturn('via-office');
     $('toll').value = '0';
     $('parking').value = '0';
     removeReceipt('toll');
@@ -923,24 +1422,23 @@ ${basisText}
     $('result-wrap').style.display = 'none';
     $('distance-source').textContent = '';
     $('route-summary').style.display = 'none';
+    clearValidationErrors();
     lastCalc = null;
     window._lastDistance = null;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  $('settings-header').addEventListener('click', () => {
-    if (settingsUnlocked) {
-      $('settings-body').style.display = 'none';
-      $('settings-toggle').textContent = '잠금 해제 ▶';
-      settingsUnlocked = false;
-      return;
-    }
+  $('open-settings-btn').addEventListener('click', () => {
     const pw = prompt('관리자 비밀번호를 입력하세요:');
     if (pw === null) return;
     if (pw !== ADMIN_PW) { alert('비밀번호가 일치하지 않습니다.'); return; }
-    settingsUnlocked = true;
-    $('settings-body').style.display = 'block';
-    $('settings-toggle').textContent = '잠그기 ▼';
+    $('settings-modal').classList.add('show');
+  });
+  $('close-settings-btn').addEventListener('click', () => {
+    $('settings-modal').classList.remove('show');
+  });
+  $('settings-modal').addEventListener('click', (e) => {
+    if (e.target === $('settings-modal')) $('settings-modal').classList.remove('show');
   });
 
   $('save-settings-btn').addEventListener('click', () => {
@@ -960,21 +1458,32 @@ ${basisText}
     const admin = ['cfg-gas','cfg-diesel','cfg-lpg','cfg-mileage-gas','cfg-mileage-diesel','cfg-mileage-lpg','cfg-mileage-hybrid','cfg-mult'];
     admin.forEach(k => save(k, $(k).value));
     updateFuelInfo();
-    settingsUnlocked = false;
-    $('settings-body').style.display = 'none';
-    $('settings-toggle').textContent = '잠금 해제 ▶';
-    alert('설정이 저장되고 잠금되었습니다.');
+    $('settings-modal').classList.remove('show');
+    alert('설정이 저장되었습니다.');
   });
 
   $('fetch-opinet-btn').addEventListener('click', () => fetchOpinetPrices(true));
   $('add-visit-btn').addEventListener('click', () => { syncVisitsFromInputs(); addVisit(); });
 
-  ['applicant','department','carnum','fuel-type','home-addr-detail'].forEach(id => {
+  ['applicant','department','carnum','fuel-type'].forEach(id => {
     $(id).addEventListener('change', (e) => {
       save(id, e.target.value);
+      $(id).classList.remove('err-field');
       if (id === 'fuel-type') updateFuelInfo();
     });
     $(id).addEventListener('blur', (e) => save(id, e.target.value));
+    $(id).addEventListener('input', () => $(id).classList.remove('err-field'));
+  });
+  $('trip-date').addEventListener('input', () => $('trip-date').classList.remove('err-field'));
+  $('purpose').addEventListener('input', () => $('purpose').classList.remove('err-field'));
+
+  $('home-addr-detail').addEventListener('input', (e) => {
+    $('home-addr-2-detail').value = e.target.value;
+    save('home-addr-detail', e.target.value);
+  });
+  $('home-addr-2-detail').addEventListener('input', (e) => {
+    $('home-addr-detail').value = e.target.value;
+    save('home-addr-detail', e.target.value);
   });
 
   setupReceipt('toll');
@@ -989,6 +1498,7 @@ ${basisText}
   load();
   updateFuelInfo();
   addVisit();
+  updateHomeAddrVisibility();
   fetchOpinetPrices(false);
 })();
 </script>
