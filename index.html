@@ -628,7 +628,7 @@ a:hover { color: var(--sans-mint-deep); }
         <ol>
           <li>통근거리(자택~회사)는 출장거리에서 제외함</li>
           <li>직출/직퇴 시: 자택 기준 경로와 회사 기준 경로 중 <strong>짧은 거리</strong>를 인정함</li>
-          <li>표준 연비: 공무원 여비업무 처리기준 (인사혁신처 「공무원 여비 규정」)</li>
+          <li>표준 연비: 공무원 여비업무 처리기준 (인사혁신처 예규 「공무원보수 등의 업무지침」)</li>
           <li>유가: 한국석유공사 오피넷 일별 전국 평균 판매가 (출장일 기준)</li>
           <li>보정계수 1.3 적용 (차량 감가·소모품·정비비 등 유지비 반영)</li>
         </ol>
@@ -712,12 +712,12 @@ a:hover { color: var(--sans-mint-deep); }
     <input type="text" id="cfg-office-addr-detail" placeholder="상세주소 (예: 시그니처타워 서관)" class="mb-16">
 
     <p class="sec-divider">연료별 표준 연비 (km/L)</p>
-    <p style="font-size: 11px; color: var(--gray-500); margin: 0 0 10px;">기본값: 공무원 여비업무 처리기준 (인사혁신처 「공무원 여비 규정」)</p>
+    <p style="font-size: 11px; color: var(--gray-500); margin: 0 0 10px;">기본값: 공무원 여비업무 처리기준 (인사혁신처 예규 「공무원보수 등의 업무지침」)</p>
     <div class="grid-4 mb-16">
       <div><label class="field-label">휘발유</label><input type="number" id="cfg-mileage-gas" min="0" step="0.01" value="11.97"></div>
       <div><label class="field-label">경유</label><input type="number" id="cfg-mileage-diesel" min="0" step="0.01" value="12.52"></div>
       <div><label class="field-label">LPG</label><input type="number" id="cfg-mileage-lpg" min="0" step="0.01" value="8.83"></div>
-      <div><label class="field-label">하이브리드</label><input type="number" id="cfg-mileage-hybrid" min="0" step="0.1" value="18"></div>
+      <div><label class="field-label">하이브리드</label><input type="number" id="cfg-mileage-hybrid" min="0" step="0.01" value="15.37"></div>
     </div>
 
     <p class="sec-divider">보정계수</p>
@@ -855,7 +855,7 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     
     let html = `<span class="fuel-info-line"><strong>표준 연비:</strong> ${mileage} km/L <span class="fuel-info-source">— 공무원 여비업무 처리기준 (인사혁신처)</span></span>`;
     if (fuel === 'hybrid') {
-      html += `<span class="fuel-info-line"><strong>유가:</strong> ${fmt(price)} 원/L <span class="fuel-info-source">— 한국석유공사 오피넷 ${officialName} ${dateText} (하이브리드는 휘발유 단가 적용)</span></span>`;
+      html += `<span class="fuel-info-line"><strong>유가:</strong> ${fmt(price)} 원/L <span class="fuel-info-source">— 한국석유공사 오피넷 ${officialName} ${dateText} (하이브리드는 휘발유 단가 준용)</span></span>`;
     } else {
       html += `<span class="fuel-info-line"><strong>유가:</strong> ${fmt(price)} 원/L <span class="fuel-info-source">— 한국석유공사 오피넷 ${officialName} ${dateText}</span></span>`;
     }
@@ -1421,11 +1421,11 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
 
     if (fuelType === 'hybrid') {
       basisText = `<strong>적용 단가 출처</strong>
-• 연비 ${mileage}km/L: 회사 자체 기준 (하이브리드 정부 공식 기준 없음)<br>
-• 유가 ${fmt(fuelPrice)}원/L: 한국석유공사 오피넷 휘발유 ${tradeDate} 전국평균 (하이브리드는 휘발유 단가 적용)${dateNote}`;
+• 연비 ${mileage}km/L: 공무원 여비업무 처리기준 하이브리드 연비 (인사혁신처 예규 「공무원보수 등의 업무지침」)<br>
+• 유가 ${fmt(fuelPrice)}원/L: 한국석유공사 오피넷 휘발유 ${tradeDate} 전국평균 (하이브리드는 휘발유 단가 준용)${dateNote}`;
     } else {
       basisText = `<strong>적용 단가 출처</strong>
-• 연비 ${mileage}km/L: 공무원 여비업무 처리기준 ${fuelLabel} 연비 (인사혁신처 「공무원 여비 규정」)<br>
+• 연비 ${mileage}km/L: 공무원 여비업무 처리기준 ${fuelLabel} 연비 (인사혁신처 예규 「공무원보수 등의 업무지침」)<br>
 • 유가 ${fmt(fuelPrice)}원/L: 한국석유공사 오피넷 ${OFFICIAL_FUEL_NAMES[fuelType]} ${tradeDate} 전국평균${dateNote}`;
     }
     $('cap-basis').innerHTML = basisText;
@@ -1556,7 +1556,7 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     }
     
     const basisText = c.fuelType === 'hybrid'
-      ? `- 연비 ${c.mileage}km/L: 회사 자체 기준 (하이브리드)\n- 유가 ${fmt(c.fuelPrice)}원/L: 한국석유공사 오피넷 휘발유 ${c.opinetTradeDate} 전국평균${dateNote}`
+      ? `- 연비 ${c.mileage}km/L: 공무원 여비업무 처리기준 하이브리드 연비 (인사혁신처)\n- 유가 ${fmt(c.fuelPrice)}원/L: 한국석유공사 오피넷 휘발유 ${c.opinetTradeDate} 전국평균 (하이브리드는 휘발유 단가 준용)${dateNote}`
       : `- 연비 ${c.mileage}km/L: 공무원 여비업무 처리기준 ${c.fuelLabel} 연비 (인사혁신처)\n- 유가 ${fmt(c.fuelPrice)}원/L: 한국석유공사 오피넷 ${OFFICIAL_FUEL_NAMES[c.fuelType]} ${c.opinetTradeDate} 전국평균${dateNote}`;
 
     const text = `[출장 유류비 산정서]
