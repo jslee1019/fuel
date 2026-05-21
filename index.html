@@ -706,7 +706,7 @@ a:hover { color: var(--sans-mint-deep); }
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script>
 // ============================================================
-const KAKAO_REST_API_KEY = "1652cd767cbc3a6a2c1af26e73d7890b";
+const KAKAO_REST_API_KEY = "여기에_본인_카카오_REST_API_키_입력";
 const WORKER_OPINET_URL = "https://wakefuel.jslee-43a.workers.dev/opinet";
 const DEFAULT_OFFICE_ADDR = "서울특별시 중구 청계천로 100";
 const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
@@ -931,6 +931,7 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
       oncomplete: function(data) {
         const addr = data.roadAddress || data.jibunAddress;
         const el = $(targetId);
+        const oldAddr = el.value;
         el.value = addr;
         if (el.dataset) { el.dataset.lat = ''; el.dataset.lng = ''; }
 
@@ -944,15 +945,21 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
           save('home-addr', addr);
           localStorage.removeItem('tc-home-addr-lat');
           localStorage.removeItem('tc-home-addr-lng');
+          if (oldAddr !== addr) invalidateDistance();
         } else if (targetId === 'cfg-office-addr') {
           save(targetId, addr);
           localStorage.removeItem('tc-' + targetId + '-lat');
           localStorage.removeItem('tc-' + targetId + '-lng');
+          if (oldAddr !== addr) invalidateDistance();
         }
         if (targetId.startsWith('visit-addr-')) {
           const visitId = targetId.replace('visit-addr-', '');
           const visit = visits.find(v => v.id === visitId);
-          if (visit) { visit.addr = addr; visit.lat = null; visit.lng = null; }
+          if (visit) {
+            const wasChanged = visit.addr !== addr;
+            visit.addr = addr; visit.lat = null; visit.lng = null;
+            if (wasChanged) invalidateDistance();
+          }
         }
       }
     }).open();
@@ -1044,11 +1051,13 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     const id = 'v_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
     visits.push({ id, addr, detail, lat: null, lng: null });
     renderVisits();
+    invalidateDistance();
   }
   window.removeVisit = function(id) {
     if (visits.length <= 1) { alert('최소 1개의 출장지가 필요합니다.'); return; }
     visits = visits.filter(v => v.id !== id);
     renderVisits();
+    invalidateDistance();
   };
   window.moveVisit = function(id, direction) {
     const idx = visits.findIndex(v => v.id === id);
@@ -1058,6 +1067,7 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     syncVisitsFromInputs();
     [visits[idx], visits[newIdx]] = [visits[newIdx], visits[idx]];
     renderVisits();
+    invalidateDistance();
   };
   function syncVisitsFromInputs() {
     visits.forEach(v => {
@@ -1089,6 +1099,7 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
   }
 
   window.selectDepart = function(value) {
+    if (departType !== value) invalidateDistance();
     departType = value;
     document.querySelectorAll('.section-card .radio-group').forEach((group, gi) => {
       if (gi === 0) {
@@ -1100,6 +1111,7 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     updateHomeAddrVisibility();
   };
   window.selectReturn = function(value) {
+    if (returnType !== value) invalidateDistance();
     returnType = value;
     document.querySelectorAll('.section-card .radio-group').forEach((group, gi) => {
       if (gi === 1) {
@@ -1256,7 +1268,7 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
         home, office, visits: visits.map(v => ({...v}))
       };
 
-      $('distance-source').textContent = '📍 OSRM 실주행거리 (실패 시 직선거리 추정)';
+      $('distance-source').textContent = '📍 실제 도로 기준 최단 거리';
       
       $('route-summary').innerHTML = `
         <div class="route-summary-box">
@@ -1285,6 +1297,21 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     d.interSegments.forEach(s => parts.push(s.km.toFixed(1)));
     parts.push(d.returnKm.toFixed(1));
     return parts.join(' + ');
+  }
+
+  // ===== 거리 재조회 필요 표시 =====
+  function invalidateDistance() {
+    if (window._lastDistance) {
+      window._lastDistance = null;
+      $('route-summary').innerHTML = `
+        <div class="route-summary-box" style="background: var(--warning-amber-tint); border-left-color: var(--warning-amber);">
+          <p class="route-summary-title" style="color: var(--warning-amber);"><i class="ti ti-alert-triangle" style="font-size:11px;"></i> 정보가 변경되었습니다</p>
+          <p class="route-summary-line" style="color: var(--warning-amber);">출장지·자택·방문 형태가 변경되어 거리 재조회가 필요합니다. "모든 거리 자동 조회" 버튼을 다시 눌러주세요.</p>
+        </div>
+      `;
+      $('route-summary').style.display = 'block';
+      $('distance-source').textContent = '';
+    }
   }
 
   function calculate() {
