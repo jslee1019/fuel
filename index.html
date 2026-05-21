@@ -433,6 +433,8 @@ a:hover { color: var(--sans-mint-deep); }
     </button>
   </div>
 
+  <div id="step-input">
+
   <div class="section-card no-print">
     <p class="section-title"><i class="ti ti-user"></i> 기본 정보</p>
     <div class="grid-2 mb-12">
@@ -579,8 +581,10 @@ a:hover { color: var(--sans-mint-deep); }
 
   <button id="calc-btn" class="btn-primary no-print" style="margin-bottom: 16px;"><i class="ti ti-file-text"></i> 기안 만들기</button>
 
+  </div><!-- /step-input -->
+
   <div id="result-wrap" style="display: none;">
-    <div class="info-banner no-print"><i class="ti ti-camera"></i> 아래 영역을 캡쳐하여 Flex 지출결의서에 첨부하세요</div>
+    <div class="info-banner no-print"><i class="ti ti-circle-check"></i> 산정서가 생성되었습니다. PDF로 다운로드하거나 수정할 수 있습니다.</div>
 
     <div id="capture-area" class="capture-area">
       <div class="capture-header">
@@ -655,7 +659,9 @@ a:hover { color: var(--sans-mint-deep); }
       </div>
     </div>
 
-    <div class="grid-2 no-print" style="margin-top: 12px;">
+    <div class="no-print" style="margin-top: 12px; display: grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap: 8px;">
+      <button id="edit-btn" class="btn"><i class="ti ti-arrow-left"></i> 기안 수정</button>
+      <button id="pdf-btn" class="btn-primary" style="padding: 14px;"><i class="ti ti-file-download"></i> PDF 다운로드</button>
       <button id="copy-btn" class="btn"><i class="ti ti-copy"></i> 텍스트 복사</button>
       <button id="reset-btn" class="btn"><i class="ti ti-refresh"></i> 초기화</button>
     </div>
@@ -704,6 +710,8 @@ a:hover { color: var(--sans-mint-deep); }
 </div>
 
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 // ============================================================
 const KAKAO_REST_API_KEY = "여기에_본인_카카오_REST_API_키_입력";
@@ -1426,8 +1434,97 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     else { $('cap-parking-receipt-wrap').style.display = 'none'; $('cap-parking-mark').style.display = 'none'; }
     $('cap-receipts-section').style.display = hasReceipt ? 'block' : 'none';
 
+    // Step 2(결과 화면)로 전환
+    $('step-input').style.display = 'none';
     $('result-wrap').style.display = 'block';
-    $('result-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function editDraft() {
+    // Step 1(입력 화면)로 복귀 - 모든 입력값 유지
+    $('result-wrap').style.display = 'none';
+    $('step-input').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function downloadPDF() {
+    if (!lastCalc) return;
+    const c = lastCalc;
+    const btn = $('pdf-btn');
+    const orig = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin"><i class="ti ti-loader-2"></i></span> PDF 생성 중...';
+
+    try {
+      const captureEl = $('capture-area');
+      
+      // 고해상도 캡쳐 (2x scale)
+      const canvas = await html2canvas(captureEl, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        windowWidth: captureEl.scrollWidth,
+        windowHeight: captureEl.scrollHeight
+      });
+
+      // A4 세로 사이즈: 210mm × 297mm
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pdfWidth = 210;
+      const pdfHeight = 297;
+      const margin = 10; // 좌우 여백
+      const contentWidth = pdfWidth - margin * 2;
+      
+      // 캔버스 비율에 맞춰 PDF 안에 들어갈 이미지 높이 계산
+      const imgWidth = contentWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      
+      // 한 페이지에 들어가는지 확인, 안 되면 여러 페이지로 분할
+      const pageContentHeight = pdfHeight - margin * 2;
+      
+      if (imgHeight <= pageContentHeight) {
+        // 한 페이지에 모두 들어감
+        pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, imgHeight);
+      } else {
+        // 여러 페이지로 분할
+        let remainingHeight = imgHeight;
+        let position = 0;
+        
+        while (remainingHeight > 0) {
+          // 현재 페이지에 추가
+          pdf.addImage(imgData, 'JPEG', margin, margin - position, imgWidth, imgHeight);
+          remainingHeight -= pageContentHeight;
+          position += pageContentHeight;
+          
+          if (remainingHeight > 0) {
+            pdf.addPage();
+          }
+        }
+      }
+
+      // 파일명 생성
+      const safeName = (c.applicant || '미입력').replace(/[\/\\?%*:|"<>]/g, '_');
+      const safeDate = (c.tripDate || new Date().toISOString().slice(0,10)).replace(/-/g, '');
+      const filename = `출장유류비_${safeName}_${safeDate}.pdf`;
+      
+      pdf.save(filename);
+      
+      btn.innerHTML = '<i class="ti ti-check"></i> 다운로드 완료';
+      setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 1500);
+    } catch (e) {
+      console.error('PDF generation error:', e);
+      alert('PDF 생성 실패: ' + e.message);
+      btn.innerHTML = orig;
+      btn.disabled = false;
+    }
   }
 
   function copyText() {
@@ -1504,6 +1601,7 @@ ${basisText}
     removeReceipt('toll');
     removeReceipt('parking');
     $('result-wrap').style.display = 'none';
+    $('step-input').style.display = 'block';
     $('distance-source').textContent = '';
     $('route-summary').style.display = 'none';
     clearValidationErrors();
@@ -1588,6 +1686,8 @@ ${basisText}
 
   $('auto-calc-btn').addEventListener('click', autoCalcDistance);
   $('calc-btn').addEventListener('click', calculate);
+  $('edit-btn').addEventListener('click', editDraft);
+  $('pdf-btn').addEventListener('click', downloadPDF);
   $('copy-btn').addEventListener('click', copyText);
   $('reset-btn').addEventListener('click', reset);
 
