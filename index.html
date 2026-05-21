@@ -50,14 +50,29 @@ body {
   margin-bottom: 8px; letter-spacing: 0.08em; text-transform: uppercase;
 }
 .header-text .subtitle { font-size: 11px; color: var(--gray-500); font-weight: 600; letter-spacing: 0.04em; }
-.settings-btn {
-  width: 40px; height: 40px; padding: 0;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--sans-white); border: 1px solid var(--gray-200);
-  border-radius: 4px; cursor: pointer; transition: all 0.2s var(--ease-quiet);
+
+.version-info {
+  text-align: right;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.7;
 }
-.settings-btn:hover { background: var(--sans-black); border-color: var(--sans-black); }
-.settings-btn:hover i { color: var(--sans-mint) !important; }
+.version-info .ver-tag {
+  display: inline-block;
+  background: var(--sans-black);
+  color: var(--sans-mint);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  font-size: 10px;
+}
+.version-info .ver-date {
+  color: var(--gray-500);
+  display: block;
+  margin-top: 4px;
+}
 
 .section-card {
   background: var(--sans-white); border: 1px solid var(--gray-200);
@@ -105,13 +120,6 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 }
 .btn-primary:hover { background: var(--gray-900); }
 
-.btn-sm {
-  width: auto; padding: 8px 14px; background: var(--gray-100);
-  border: none; color: var(--sans-black);
-  font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-}
-.btn-sm:hover { background: var(--gray-200); }
-
 .btn-add {
   width: 100%; padding: 12px; background: var(--sans-white);
   border: 1.5px dashed var(--gray-500); color: var(--gray-700);
@@ -121,15 +129,8 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn-add:hover { border-color: var(--sans-black); color: var(--sans-black); background: var(--gray-50); }
 .btn-add:active { transform: scale(0.99); }
 
-.sec-divider {
-  font-size: 10px; font-weight: 700; color: var(--gray-500);
-  margin: 1.5rem 0 0.85rem; padding-top: 1.25rem;
-  border-top: 1px solid var(--gray-200); letter-spacing: 0.12em; text-transform: uppercase;
-}
-
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-.grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
 .mb-12 { margin-bottom: 12px; }
 .mb-8 { margin-bottom: 8px; }
 .mb-16 { margin-bottom: 16px; }
@@ -153,17 +154,11 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
   border-left: 3px solid var(--sans-mint-deep); margin-bottom: 12px;
   font-size: 12px; color: var(--gray-900);
 }
-.info-mini {
-  background: var(--sans-mint-tint); padding: 10px 12px; border-radius: 4px;
-  border-left: 3px solid var(--sans-mint-deep); font-size: 11px;
-  color: var(--gray-900); margin-top: 10px;
-}
 .warning-banner {
   background: var(--warning-amber-tint); padding: 12px 14px; border-radius: 4px;
   border-left: 3px solid var(--warning-amber); margin-bottom: 12px;
   font-size: 12px; color: var(--warning-amber); font-weight: 600;
 }
-
 .fallback-notice {
   background: var(--warning-amber-tint); padding: 10px 12px; border-radius: 4px;
   border-left: 3px solid var(--warning-amber); margin-top: 8px;
@@ -176,44 +171,27 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .radio-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .radio-card {
-  padding: 14px 14px;
-  border-radius: 4px;
-  background: var(--gray-100);
-  cursor: pointer;
+  padding: 14px 14px; border-radius: 4px;
+  background: var(--gray-100); cursor: pointer;
   transition: all 0.2s var(--ease-quiet);
   border: 1px solid transparent;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  display: flex; align-items: flex-start; gap: 10px;
 }
 .radio-card:hover { background: var(--gray-200); }
-.radio-card.selected {
-  background: var(--sans-black);
-  border-color: var(--sans-black);
-}
+.radio-card.selected { background: var(--sans-black); border-color: var(--sans-black); }
 .radio-card.err-field { background: var(--error-red-tint); border-color: var(--error-red); }
 .radio-circle {
-  width: 18px; height: 18px;
-  border-radius: 50%;
-  border: 2px solid var(--gray-500);
-  background: var(--sans-white);
-  flex-shrink: 0;
-  margin-top: 1px;
-  position: relative;
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid var(--gray-500); background: var(--sans-white);
+  flex-shrink: 0; margin-top: 1px; position: relative;
   transition: all 0.2s var(--ease-quiet);
 }
-.radio-card.selected .radio-circle {
-  border-color: var(--sans-mint);
-  background: transparent;
-}
+.radio-card.selected .radio-circle { border-color: var(--sans-mint); background: transparent; }
 .radio-card.selected .radio-circle::after {
-  content: '';
-  position: absolute;
-  width: 8px; height: 8px;
-  border-radius: 50%;
+  content: ''; position: absolute;
+  width: 8px; height: 8px; border-radius: 50%;
   background: var(--sans-mint);
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
 }
 .radio-content { flex: 1; min-width: 0; }
 .radio-card-title {
@@ -228,12 +206,10 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 .radio-card.selected .radio-card-desc { color: var(--sans-mint); opacity: 0.7; }
 
 .home-inline {
-  margin-top: 12px;
-  padding: 14px;
+  margin-top: 12px; padding: 14px;
   background: var(--sans-mint-tint);
   border-left: 3px solid var(--sans-mint-deep);
-  border-radius: 4px;
-  display: none;
+  border-radius: 4px; display: none;
 }
 .home-inline.show { display: block; }
 .home-inline-title {
@@ -281,30 +257,6 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
   background: rgba(0,0,0,0.8); color: var(--sans-mint);
   border: none; border-radius: 50%; width: 24px; height: 24px; padding: 0;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
-}
-
-.modal-overlay {
-  display: none; position: fixed; top: 0; left: 0;
-  width: 100%; height: 100%; background: rgba(0,0,0,0.5);
-  z-index: 100; justify-content: center; align-items: flex-start;
-  padding: 24px 16px; overflow-y: auto;
-}
-.modal-overlay.show { display: flex; }
-.modal-content {
-  background: var(--sans-white); border-radius: 4px;
-  max-width: 680px; width: 100%; padding: 2rem; position: relative;
-}
-.modal-close {
-  position: absolute; top: 16px; right: 16px;
-  width: 32px; height: 32px; background: var(--gray-100);
-  border: none; color: var(--sans-black);
-  display: flex; align-items: center; justify-content: center;
-}
-.modal-close:hover { background: var(--sans-black); color: var(--sans-mint); }
-.modal-title {
-  font-size: 15px; font-weight: 800; margin-bottom: 1.5rem;
-  letter-spacing: 0.08em; text-transform: uppercase;
-  display: flex; align-items: center; gap: 6px;
 }
 
 .route-summary-box {
@@ -411,40 +363,19 @@ a { color: var(--sans-black); text-decoration: underline; }
 a:hover { color: var(--sans-mint-deep); }
 
 @media print {
-  @page {
-    size: A4;
-    margin: 12mm;
-  }
-  body { 
-    background: white !important; 
-    padding: 0 !important; 
-    margin: 0 !important;
-  }
+  @page { size: A4; margin: 12mm; }
+  body { background: white !important; padding: 0 !important; margin: 0 !important; }
   .no-print { display: none !important; }
-  .wrap {
-    max-width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-  .capture-area { 
-    border: none !important; 
-    padding: 0 !important; 
-    box-shadow: none !important;
-  }
-  /* 페이지 분할 방지 */
+  .wrap { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+  .capture-area { border: none !important; padding: 0 !important; box-shadow: none !important; }
   .capture-section { page-break-inside: avoid; }
   .capture-rules { page-break-inside: avoid; }
-  .capture-route-table { page-break-inside: auto; }
-  .capture-route-table tr { page-break-inside: avoid; page-break-after: auto; }
+  .capture-route-table tr { page-break-inside: avoid; }
   .capture-total-table { page-break-inside: avoid; }
-  /* 컬러 인쇄 유지 */
-  * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 }
 @media (max-width: 600px) {
-  .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: 1fr 1fr; }
   .capture-receipts { grid-template-columns: 1fr; }
   .radio-group { grid-template-columns: 1fr; }
 }
@@ -457,11 +388,12 @@ a:hover { color: var(--sans-mint-deep); }
   <div class="header-bar no-print">
     <div class="header-text">
       <h1>출장 유류비 산정</h1>
-      <p class="subtitle">결과 화면 캡쳐 → Flex 지출결의서 첨부</p>
+      <p class="subtitle">결과 화면 → PDF/이미지 저장 → Flex 첨부</p>
     </div>
-    <button class="settings-btn" id="open-settings-btn" title="관리자 설정">
-      <i class="ti ti-settings" style="font-size: 18px; color: var(--gray-700);"></i>
-    </button>
+    <div class="version-info">
+      <span class="ver-tag" id="ver-tag">v1.0</span>
+      <span class="ver-date" id="ver-date">2026-05-21</span>
+    </div>
   </div>
 
   <div id="step-input">
@@ -527,7 +459,7 @@ a:hover { color: var(--sans-mint-deep); }
 
   <div class="section-card no-print">
     <p class="section-title"><i class="ti ti-building"></i> 회사 주소 <i class="ti ti-lock-filled lock-icon"></i></p>
-    <div class="fixed-display" id="office-addr-display">서울특별시 중구 청계천로 100 시그니처타워 서관</div>
+    <div class="fixed-display" id="office-addr-display"></div>
   </div>
 
   <div class="section-card no-print">
@@ -628,9 +560,9 @@ a:hover { color: var(--sans-mint-deep); }
         <ol>
           <li>통근거리(자택~회사)는 출장거리에서 제외함</li>
           <li>직출/직퇴 시: 자택 기준 경로와 회사 기준 경로 중 <strong>짧은 거리</strong>를 인정함</li>
-          <li>표준 연비: 공무원 여비업무 처리기준 (인사혁신처 예규 「공무원보수 등의 업무지침」)</li>
+          <li>표준 연비: 인사혁신처 예규 「공무원보수 등의 업무지침」 공무원여비업무 처리기준</li>
           <li>유가: 한국석유공사 오피넷 일별 전국 평균 판매가 (출장일 기준)</li>
-          <li>보정계수 1.3 적용 (차량 감가·소모품·정비비 등 유지비 반영)</li>
+          <li>보정계수 <span id="capture-multiplier">1.3</span> 적용 (차량 감가·소모품·정비비 등 유지비 반영)</li>
         </ol>
       </div>
 
@@ -698,50 +630,45 @@ a:hover { color: var(--sans-mint-deep); }
 
 </div>
 
-<div class="modal-overlay no-print" id="settings-modal">
-  <div class="modal-content">
-    <button class="modal-close" id="close-settings-btn"><i class="ti ti-x"></i></button>
-    <p class="modal-title"><i class="ti ti-settings"></i> 관리자 설정</p>
-
-    <p style="font-size: 11px; font-weight: 700; margin: 0 0 6px; letter-spacing: 0.08em; text-transform: uppercase;">회사 주소</p>
-    <p style="font-size: 11px; color: var(--gray-500); margin: 0 0 10px;">회사 이전 시 변경. 변경하면 모든 직원에게 적용됩니다.</p>
-    <div class="addr-input-wrap mb-8">
-      <input type="text" id="cfg-office-addr" placeholder="주소 찾기 클릭" readonly>
-      <button class="addr-search-btn" onclick="searchAddr('cfg-office-addr')"><i class="ti ti-search"></i> 주소 찾기</button>
-    </div>
-    <input type="text" id="cfg-office-addr-detail" placeholder="상세주소 (예: 시그니처타워 서관)" class="mb-16">
-
-    <p class="sec-divider">연료별 표준 연비 (km/L)</p>
-    <p style="font-size: 11px; color: var(--gray-500); margin: 0 0 10px;">기본값: 공무원 여비업무 처리기준 (인사혁신처 예규 「공무원보수 등의 업무지침」)</p>
-    <div class="grid-4 mb-16">
-      <div><label class="field-label">휘발유</label><input type="number" id="cfg-mileage-gas" min="0" step="0.01" value="11.97"></div>
-      <div><label class="field-label">경유</label><input type="number" id="cfg-mileage-diesel" min="0" step="0.01" value="12.52"></div>
-      <div><label class="field-label">LPG</label><input type="number" id="cfg-mileage-lpg" min="0" step="0.01" value="8.83"></div>
-      <div><label class="field-label">하이브리드</label><input type="number" id="cfg-mileage-hybrid" min="0" step="0.01" value="15.37"></div>
-    </div>
-
-    <p class="sec-divider">보정계수</p>
-    <p style="font-size: 11px; color: var(--gray-500); margin: 0 0 10px;">차량 감가·소모품·정비비 등 유지비 반영 (일반적으로 1.3~1.5)</p>
-    <input type="number" id="cfg-mult" min="1" max="2" step="0.1" value="1.3" class="mb-16">
-
-    <button id="save-settings-btn" class="btn-primary">설정 저장 후 닫기</button>
-  </div>
-</div>
-
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 // ============================================================
-const KAKAO_REST_API_KEY = "1652cd767cbc3a6a2c1af26e73d7890b";
-const WORKER_OPINET_URL = "https://wakefuel.jslee-43a.workers.dev/opinet";
-const DEFAULT_OFFICE_ADDR = "서울특별시 중구 청계천로 100";
-const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
+// 📌 회사 정책 - 변경 시 이 부분만 수정 후 GitHub 푸시
+// ============================================================
+const CONFIG = {
+  // 버전 정보 (정책/기능 변경 시 함께 업데이트)
+  version: "v1.0",
+  lastUpdated: "2026-05-21",
+
+  // 회사 주소
+  officeAddr: "서울특별시 중구 청계천로 100",
+  officeAddrDetail: "시그니처타워 서관",
+
+  // 보정계수 (차량 감가·소모품·정비비 등 유지비 반영)
+  multiplier: 1.3,
+
+  // 연료별 표준 연비 (km/L)
+  // 출처: 인사혁신처 예규 「공무원보수 등의 업무지침」 공무원여비업무 처리기준
+  mileage: {
+    gasoline: 11.97,
+    diesel: 12.52,
+    lpg: 8.83,
+    hybrid: 15.37
+  },
+
+  // API 키 - 카카오 REST API (좌표 변환용)
+  // 카카오 개발자 사이트(developers.kakao.com)에서 발급
+  kakaoApiKey: "여기에_본인_카카오_REST_API_키_입력",
+
+  // 워커 URL (유가 조회 프록시)
+  workerOpinetUrl: "https://wakefuel.jslee-43a.workers.dev/opinet"
+};
 // ============================================================
 
 (function() {
   const $ = (id) => document.getElementById(id);
   const fmt = (n) => Math.round(n).toLocaleString('ko-KR');
-  const ADMIN_PW = '2580';
   let lastCalc = null;
   let officeCoord = null;
   let receipts = { toll: null, parking: null };
@@ -750,17 +677,10 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
   let returnType = 'via-office';
   let coordCache = {};
   let currentFuelData = { tradeDate: '', fallback: false, fallbackReason: '' };
-  // 유가는 오피넷에서 자동 조회한 값을 메모리에만 보관 (인풋 없음)
   let currentPrices = { gasoline: 1700, diesel: 1550, lpg: 1100 };
 
   const FUEL_LABELS = { gasoline: '휘발유', diesel: '경유', lpg: 'LPG', hybrid: '하이브리드' };
   const OFFICIAL_FUEL_NAMES = { gasoline: '휘발유', diesel: '자동차용경유', lpg: 'LPG' };
-
-  function getOfficeAddr() {
-    const base = localStorage.getItem('tc-office-addr') || DEFAULT_OFFICE_ADDR;
-    const detail = localStorage.getItem('tc-office-addr-detail') || DEFAULT_OFFICE_ADDR_DETAIL;
-    return { base, detail, full: detail ? `${base} ${detail}` : base };
-  }
 
   function updateHomeAddrVisibility() {
     const departDirect = departType === 'direct';
@@ -789,6 +709,7 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     }
   }
 
+  // 개인 정보만 LocalStorage에 저장 (회사 정책은 코드 상수)
   function load() {
     try {
       const personal = ['applicant','department','carnum','fuel-type','home-addr','home-addr-detail'];
@@ -801,23 +722,6 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
       if (homeAddr) $('home-addr-2').value = homeAddr;
       if (homeDetail) $('home-addr-2-detail').value = homeDetail;
 
-      const admin = ['cfg-mileage-gas','cfg-mileage-diesel','cfg-mileage-lpg','cfg-mileage-hybrid','cfg-mult'];
-      admin.forEach(k => {
-        const v = localStorage.getItem('tc-' + k);
-        if (v !== null && $(k)) $(k).value = v;
-      });
-
-      // 기존 유가 관련 LocalStorage 정리 (옛 버전 잔여 데이터 제거)
-      localStorage.removeItem('tc-cfg-gas');
-      localStorage.removeItem('tc-cfg-diesel');
-      localStorage.removeItem('tc-cfg-lpg');
-      localStorage.removeItem('tc-opinet-status');
-
-      const office = getOfficeAddr();
-      $('office-addr-display').textContent = office.full;
-      $('cfg-office-addr').value = office.base;
-      $('cfg-office-addr-detail').value = office.detail;
-
       const lat = localStorage.getItem('tc-home-addr-lat');
       const lng = localStorage.getItem('tc-home-addr-lng');
       if (lat && lng) {
@@ -826,9 +730,16 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
         $('home-addr-2').dataset.lat = lat;
         $('home-addr-2').dataset.lng = lng;
       }
-      const offLat = localStorage.getItem('tc-office-lat');
-      const offLng = localStorage.getItem('tc-office-lng');
-      if (offLat && offLng) officeCoord = { lat: parseFloat(offLat), lng: parseFloat(offLng) };
+
+      // 옛 버전 LocalStorage 데이터 정리 (정책은 이제 코드에서 관리)
+      const obsoleteKeys = [
+        'tc-cfg-gas', 'tc-cfg-diesel', 'tc-cfg-lpg',
+        'tc-cfg-mileage-gas', 'tc-cfg-mileage-diesel', 'tc-cfg-mileage-lpg', 'tc-cfg-mileage-hybrid',
+        'tc-cfg-mult', 'tc-cfg-office-addr', 'tc-cfg-office-addr-detail',
+        'tc-office-addr', 'tc-office-addr-detail', 'tc-office-lat', 'tc-office-lng', 'tc-office-cached-addr',
+        'tc-opinet-status', 'tc-opinet-trade-date'
+      ];
+      obsoleteKeys.forEach(k => localStorage.removeItem(k));
     } catch (e) {}
   }
   function save(key, value) { try { localStorage.setItem('tc-' + key, value); } catch (e) {} }
@@ -837,12 +748,18 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     if (!dt || dt.length < 8) return '';
     return `${dt.slice(0,4)}-${dt.slice(4,6)}-${dt.slice(6,8)}`;
   }
-
-  // 출장일자를 YYYYMMDD 형식으로 변환
   function getTripDateYYYYMMDD() {
-    const v = $('trip-date').value; // "2026-05-21"
+    const v = $('trip-date').value;
     if (!v) return '';
     return v.replace(/-/g, '');
+  }
+
+  function getMileage(fuel) {
+    return CONFIG.mileage[fuel] || 12;
+  }
+  function getFuelPrice(fuel) {
+    if (fuel === 'hybrid') return currentPrices.gasoline;
+    return currentPrices[fuel] || 1700;
   }
 
   function updateFuelInfo() {
@@ -861,7 +778,6 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     }
     $('fuel-info').innerHTML = html;
 
-    // fallback 안내 표시
     const fallbackEl = $('fuel-fallback-notice');
     if (currentFuelData.fallback) {
       let msg = '';
@@ -876,26 +792,16 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
       fallbackEl.style.display = 'none';
     }
   }
-  function getMileage(fuel) {
-    const id = 'cfg-mileage-' + (fuel === 'gasoline' ? 'gas' : fuel);
-    return parseFloat($(id).value) || 12;
-  }
-  function getFuelPrice(fuel) {
-    if (fuel === 'hybrid') return currentPrices.gasoline;
-    return currentPrices[fuel] || 1700;
-  }
 
-  // 출장일자 기반 유가 조회
-  async function fetchOpinetPricesForTripDate(showAlert = false) {
+  async function fetchOpinetPricesForTripDate() {
     const tripDate = getTripDateYYYYMMDD();
-    let url = WORKER_OPINET_URL;
+    let url = CONFIG.workerOpinetUrl;
     if (tripDate) url += `?date=${tripDate}`;
 
     try {
       const res = await fetch(url);
       const data = await res.json();
       if (data.success && data.prices) {
-        // 메모리 변수에만 저장 (LocalStorage 캐시 X)
         if (data.prices.gasoline) currentPrices.gasoline = data.prices.gasoline;
         if (data.prices.diesel) currentPrices.diesel = data.prices.diesel;
         if (data.prices.lpg) currentPrices.lpg = data.prices.lpg;
@@ -905,16 +811,11 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
           fallback: data.fallback || false,
           fallbackReason: data.fallbackReason || ''
         };
-
         updateFuelInfo();
-        const tradeDate = formatTradeDate(data.tradeDate);
-        if (showAlert) {
-          alert(`유가 갱신 완료\n기준일: ${tradeDate}${data.fallback ? ' (fallback)' : ''}\n\n휘발유: ${fmt(data.prices.gasoline)}원\n자동차용경유: ${fmt(data.prices.diesel)}원\n자동차용부탄: ${fmt(data.prices.lpg)}원`);
-        }
         return true;
       } else { throw new Error(data.error || '데이터 없음'); }
     } catch (e) {
-      if (showAlert) alert('오피넷 자동 조회 실패. 기본 단가를 사용합니다.\n\n' + e.message);
+      console.warn('오피넷 자동 조회 실패:', e.message);
       return false;
     }
   }
@@ -962,11 +863,6 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
           localStorage.removeItem('tc-home-addr-lat');
           localStorage.removeItem('tc-home-addr-lng');
           if (oldAddr !== addr) invalidateDistance();
-        } else if (targetId === 'cfg-office-addr') {
-          save(targetId, addr);
-          localStorage.removeItem('tc-' + targetId + '-lat');
-          localStorage.removeItem('tc-' + targetId + '-lng');
-          if (oldAddr !== addr) invalidateDistance();
         }
         if (targetId.startsWith('visit-addr-')) {
           const visitId = targetId.replace('visit-addr-', '');
@@ -982,12 +878,12 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
   };
 
   async function kakaoGeocode(addr) {
-    if (!KAKAO_REST_API_KEY || KAKAO_REST_API_KEY === '여기에_본인_카카오_REST_API_키_입력') {
-      throw new Error('관리자가 카카오 API 키를 설정해야 합니다.');
+    if (!CONFIG.kakaoApiKey || CONFIG.kakaoApiKey === '1652cd767cbc3a6a2c1af26e73d7890b') {
+      throw new Error('CONFIG에 카카오 API 키를 설정해주세요');
     }
     if (coordCache[addr]) return coordCache[addr];
     const url = `https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(addr)}`;
-    const res = await fetch(url, { headers: { 'Authorization': `KakaoAK ${KAKAO_REST_API_KEY}` } });
+    const res = await fetch(url, { headers: { 'Authorization': `KakaoAK ${CONFIG.kakaoApiKey}` } });
     if (!res.ok) {
       if (res.status === 401) throw new Error('카카오 API 키가 잘못되었습니다');
       throw new Error('주소 변환 실패 (HTTP ' + res.status + ')');
@@ -995,7 +891,7 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     const data = await res.json();
     if (!data.documents || data.documents.length === 0) {
       const url2 = `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(addr)}`;
-      const res2 = await fetch(url2, { headers: { 'Authorization': `KakaoAK ${KAKAO_REST_API_KEY}` } });
+      const res2 = await fetch(url2, { headers: { 'Authorization': `KakaoAK ${CONFIG.kakaoApiKey}` } });
       if (!res2.ok) throw new Error('주소를 찾을 수 없음');
       const data2 = await res2.json();
       if (!data2.documents || data2.documents.length === 0) throw new Error('주소를 찾을 수 없음: ' + addr);
@@ -1030,18 +926,8 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
   }
 
   async function getOfficeCoord() {
-    const office = getOfficeAddr();
-    const cachedAddr = localStorage.getItem('tc-office-cached-addr');
-    if (cachedAddr !== office.base) {
-      officeCoord = null;
-      localStorage.removeItem('tc-office-lat');
-      localStorage.removeItem('tc-office-lng');
-    }
     if (officeCoord) return officeCoord;
-    officeCoord = await kakaoGeocode(office.base);
-    save('office-lat', officeCoord.lat);
-    save('office-lng', officeCoord.lng);
-    save('office-cached-addr', office.base);
+    officeCoord = await kakaoGeocode(CONFIG.officeAddr);
     return officeCoord;
   }
 
@@ -1164,9 +1050,7 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
       errors.push('출장지 (최소 1개)');
     } else {
       const emptyVisits = visits.filter(v => !v.addr);
-      if (emptyVisits.length > 0) {
-        errors.push('빈 출장지 주소');
-      }
+      if (emptyVisits.length > 0) errors.push('빈 출장지 주소');
     }
 
     if (!window._lastDistance && errors.length === 0) {
@@ -1187,16 +1071,35 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     $('validation-error').style.display = 'none';
   }
 
+  function invalidateDistance() {
+    if (window._lastDistance) {
+      window._lastDistance = null;
+      $('route-summary').innerHTML = `
+        <div class="route-summary-box" style="background: var(--warning-amber-tint); border-left-color: var(--warning-amber);">
+          <p class="route-summary-title" style="color: var(--warning-amber);"><i class="ti ti-alert-triangle" style="font-size:11px;"></i> 정보가 변경되었습니다</p>
+          <p class="route-summary-line" style="color: var(--warning-amber);">출장지·자택·방문 형태가 변경되어 거리 재조회가 필요합니다. "모든 거리 자동 조회" 버튼을 다시 눌러주세요.</p>
+        </div>
+      `;
+      $('route-summary').style.display = 'block';
+      $('distance-source').textContent = '';
+    }
+  }
+
+  function getSumExpression() {
+    const d = window._lastDistance;
+    if (!d) return '';
+    const parts = [d.departKm.toFixed(1)];
+    d.interSegments.forEach(s => parts.push(s.km.toFixed(1)));
+    parts.push(d.returnKm.toFixed(1));
+    return parts.join(' + ');
+  }
+
   async function autoCalcDistance() {
     syncVisitsFromInputs();
-    
     const needsHome = departType === 'direct' || returnType === 'direct';
     if (needsHome) {
       const homeAddr = $('home-addr').value.trim() || $('home-addr-2').value.trim();
-      if (!homeAddr) {
-        alert('직출 또는 직퇴 선택 시 자택 주소를 입력해주세요.');
-        return;
-      }
+      if (!homeAddr) { alert('직출 또는 직퇴 선택 시 자택 주소를 입력해주세요.'); return; }
     }
     if (visits.length === 0 || !visits[0].addr) { alert('최소 1개의 출장지를 입력해주세요.'); return; }
     for (const v of visits) {
@@ -1285,7 +1188,6 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
       };
 
       $('distance-source').textContent = '📍 실제 도로 기준 최단 거리';
-      
       $('route-summary').innerHTML = `
         <div class="route-summary-box">
           <p class="route-summary-title"><i class="ti ti-route" style="font-size:11px;"></i> 경로 요약</p>
@@ -1306,33 +1208,8 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     }
   }
 
-  function getSumExpression() {
-    const d = window._lastDistance;
-    if (!d) return '';
-    const parts = [d.departKm.toFixed(1)];
-    d.interSegments.forEach(s => parts.push(s.km.toFixed(1)));
-    parts.push(d.returnKm.toFixed(1));
-    return parts.join(' + ');
-  }
-
-  // ===== 거리 재조회 필요 표시 =====
-  function invalidateDistance() {
-    if (window._lastDistance) {
-      window._lastDistance = null;
-      $('route-summary').innerHTML = `
-        <div class="route-summary-box" style="background: var(--warning-amber-tint); border-left-color: var(--warning-amber);">
-          <p class="route-summary-title" style="color: var(--warning-amber);"><i class="ti ti-alert-triangle" style="font-size:11px;"></i> 정보가 변경되었습니다</p>
-          <p class="route-summary-line" style="color: var(--warning-amber);">출장지·자택·방문 형태가 변경되어 거리 재조회가 필요합니다. "모든 거리 자동 조회" 버튼을 다시 눌러주세요.</p>
-        </div>
-      `;
-      $('route-summary').style.display = 'block';
-      $('distance-source').textContent = '';
-    }
-  }
-
   function calculate() {
     if (!validate()) return;
-
     syncVisitsFromInputs();
 
     const applicant = $('applicant').value.trim();
@@ -1349,7 +1226,7 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     const fallbackReason = currentFuelData.fallbackReason;
 
     const d = window._lastDistance;
-    const multiplier = parseFloat($('cfg-mult').value) || 1.3;
+    const multiplier = CONFIG.multiplier;
     const fuelUsed = d.totalKm / mileage;
     const rawFuelCost = fuelUsed * fuelPrice;
     const adjustedFuelCost = rawFuelCost * multiplier;
@@ -1376,6 +1253,7 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     $('cap-purpose').textContent = purpose;
     $('cap-vehicle').textContent = `${fuelLabel} (${mileage}km/L) / ${carNumber}`;
     $('cap-pattern').textContent = `${departLabel} → ${returnLabel}`;
+    $('capture-multiplier').textContent = multiplier;
 
     const rows = [];
     if (departType === 'via-office') {
@@ -1408,7 +1286,6 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
 연료비 = ${fuelUsed.toFixed(2)} L × ${fmt(fuelPrice)}원 = ${fmt(rawFuelCost)}원<br>
 보정 적용 = ${fmt(rawFuelCost)}원 × ${multiplier} = <strong>${fmt(adjustedFuelCost)}원</strong>`;
 
-    // 산정 근거 (출장일 기준 + fallback 안내 포함)
     let basisText = '';
     let dateNote = '';
     if (fallback) {
@@ -1442,20 +1319,18 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     else { $('cap-parking-receipt-wrap').style.display = 'none'; $('cap-parking-mark').style.display = 'none'; }
     $('cap-receipts-section').style.display = hasReceipt ? 'block' : 'none';
 
-    // Step 2(결과 화면)로 전환
     $('step-input').style.display = 'none';
     $('result-wrap').style.display = 'block';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function editDraft() {
-    // Step 1(입력 화면)로 복귀 - 모든 입력값 유지
     $('result-wrap').style.display = 'none';
     $('step-input').style.display = 'block';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // 모바일 감지 (User Agent + 화면 너비)
+  // ===== 디바이스 감지 + 다운로드 =====
   function isMobile() {
     const ua = navigator.userAgent || '';
     const mobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
@@ -1463,7 +1338,6 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     return mobileUA || narrowScreen;
   }
 
-  // PC: 인쇄 다이얼로그 (PDF로 저장)
   function downloadAsPDF() {
     if (!lastCalc) return;
     const c = lastCalc;
@@ -1475,7 +1349,6 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     setTimeout(() => { document.title = originalTitle; }, 500);
   }
 
-  // 모바일: 이미지(PNG) 다운로드
   async function downloadAsImage() {
     if (!lastCalc) return;
     const c = lastCalc;
@@ -1487,19 +1360,14 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     try {
       const captureEl = $('capture-area');
       const canvas = await html2canvas(captureEl, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        windowWidth: captureEl.scrollWidth,
-        windowHeight: captureEl.scrollHeight
+        scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false,
+        windowWidth: captureEl.scrollWidth, windowHeight: captureEl.scrollHeight
       });
 
       const safeName = (c.applicant || '미입력').replace(/[\/\\?%*:|"<>]/g, '_');
       const safeDate = (c.tripDate || new Date().toISOString().slice(0,10)).replace(/-/g, '');
       const filename = `출장유류비_${safeName}_${safeDate}.png`;
 
-      // Blob 방식으로 다운로드 (iOS Safari 호환)
       canvas.toBlob(function(blob) {
         if (!blob) { throw new Error('이미지 생성 실패'); }
         const url = URL.createObjectURL(blob);
@@ -1510,7 +1378,6 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
         link.click();
         document.body.removeChild(link);
         setTimeout(() => URL.revokeObjectURL(url), 100);
-        
         btn.innerHTML = '<i class="ti ti-check"></i> 저장 완료';
         setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 1500);
       }, 'image/png');
@@ -1522,16 +1389,11 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     }
   }
 
-  // 통합 다운로드 핸들러
   function handleDownload() {
-    if (isMobile()) {
-      downloadAsImage();
-    } else {
-      downloadAsPDF();
-    }
+    if (isMobile()) downloadAsImage();
+    else downloadAsPDF();
   }
 
-  // 버튼 라벨 자동 설정
   function updateDownloadButtonLabel() {
     const label = $('pdf-btn-label');
     const infoText = $('result-info-text');
@@ -1544,129 +1406,12 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     }
   }
 
-  function copyText() {
-    if (!lastCalc) return;
-    const c = lastCalc;
-    const visitsText = c.visits.map((v, i) => `  출장지${i+1}: ${v.addr}${v.detail ? ' ' + v.detail : ''}`).join('\n');
-    
-    let dateNote = '';
-    if (c.fallback) {
-      if (c.fallbackReason === 'exceeds_7days') dateNote = ' ※ 출장일 7일 경과로 fallback';
-      else if (c.fallbackReason === 'future_date') dateNote = ' ※ 출장일 미도래로 fallback';
-    }
-    
-    const basisText = c.fuelType === 'hybrid'
-      ? `- 연비 ${c.mileage}km/L: 공무원 여비업무 처리기준 하이브리드 연비 (인사혁신처)\n- 유가 ${fmt(c.fuelPrice)}원/L: 한국석유공사 오피넷 휘발유 ${c.opinetTradeDate} 전국평균 (하이브리드는 휘발유 단가 준용)${dateNote}`
-      : `- 연비 ${c.mileage}km/L: 공무원 여비업무 처리기준 ${c.fuelLabel} 연비 (인사혁신처)\n- 유가 ${fmt(c.fuelPrice)}원/L: 한국석유공사 오피넷 ${OFFICIAL_FUEL_NAMES[c.fuelType]} ${c.opinetTradeDate} 전국평균${dateNote}`;
-
-    const text = `[출장 유류비 산정서]
-작성일: ${new Date().toLocaleDateString('ko-KR')}
-
-[사규 요약]
-① 통근거리(자택~회사)는 출장거리에서 제외
-② 직출/직퇴 시 집 경로와 회사 경로 중 짧은 거리 인정
-③ 표준 연비: 공무원 여비업무 처리기준 (인사혁신처)
-④ 유가: 한국석유공사 오피넷 일별 전국 평균 (출장일 기준)
-⑤ 보정계수 1.3 (차량 유지비 반영)
-
-1. 신청 정보
-- 신청자: ${c.applicant}${c.department ? ` (${c.department})` : ''}
-- 출장일자: ${c.tripDate}
-- 출장 목적: ${c.purpose}
-- 차량: ${c.fuelLabel} (${c.mileage}km/L) / ${c.carNumber}
-- 방문/퇴근: ${c.departLabel} → ${c.returnLabel}
-
-2. 출장지
-${visitsText}
-
-3. 거리 산정
-- ${c.departLogic}
-${c.interSegments.map(s => `- 출장지${s.from}→출장지${s.to}: ${s.km.toFixed(1)}km`).join('\n')}
-- ${c.returnLogic}
-- 총 인정거리: ${getSumExpression()} = ${c.totalKm.toFixed(1)} km
-
-4. 유류비 계산
-- 사용연료: ${c.totalKm.toFixed(1)} ÷ ${c.mileage} = ${c.fuelUsed.toFixed(2)} L
-- 연료비: ${c.fuelUsed.toFixed(2)} L × ${fmt(c.fuelPrice)}원 = ${fmt(c.rawFuelCost)}원
-- 보정(×${c.multiplier}): ${fmt(c.adjustedFuelCost)}원
-
-적용 단가 출처:
-${basisText}
-
-5. 지급 내역
-- 유류비: ${fmt(c.adjustedFuelCost)}원
-- 통행료: ${fmt(c.toll)}원${receipts.toll ? ' (영수증 첨부)' : ''}
-- 주차비: ${fmt(c.parking)}원${receipts.parking ? ' (영수증 첨부)' : ''}
-- 총 지급액: ${fmt(c.totalCost)}원`;
-
-    navigator.clipboard.writeText(text).then(() => {
-      const btn = $('copy-btn');
-      const orig = btn.innerHTML;
-      btn.innerHTML = '<i class="ti ti-check"></i> 복사 완료';
-      setTimeout(() => { btn.innerHTML = orig; }, 1500);
-    });
-  }
-
-  function reset() {
-    $('purpose').value = '';
-    visits = [];
-    addVisit();
-    selectDepart('via-office');
-    selectReturn('via-office');
-    $('toll').value = '0';
-    $('parking').value = '0';
-    removeReceipt('toll');
-    removeReceipt('parking');
-    $('result-wrap').style.display = 'none';
-    $('step-input').style.display = 'block';
-    $('distance-source').textContent = '';
-    $('route-summary').style.display = 'none';
-    clearValidationErrors();
-    lastCalc = null;
-    window._lastDistance = null;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  $('open-settings-btn').addEventListener('click', () => {
-    const pw = prompt('관리자 비밀번호를 입력하세요:');
-    if (pw === null) return;
-    if (pw !== ADMIN_PW) { alert('비밀번호가 일치하지 않습니다.'); return; }
-    $('settings-modal').classList.add('show');
-  });
-  $('close-settings-btn').addEventListener('click', () => {
-    $('settings-modal').classList.remove('show');
-  });
-  $('settings-modal').addEventListener('click', (e) => {
-    if (e.target === $('settings-modal')) $('settings-modal').classList.remove('show');
-  });
-
-  $('save-settings-btn').addEventListener('click', () => {
-    const newOfficeAddr = $('cfg-office-addr').value.trim();
-    const newOfficeDetail = $('cfg-office-addr-detail').value.trim();
-    if (newOfficeAddr) {
-      const oldOfficeAddr = localStorage.getItem('tc-office-addr') || DEFAULT_OFFICE_ADDR;
-      if (oldOfficeAddr !== newOfficeAddr) {
-        localStorage.removeItem('tc-office-lat');
-        localStorage.removeItem('tc-office-lng');
-        officeCoord = null;
-      }
-      save('office-addr', newOfficeAddr);
-      save('office-addr-detail', newOfficeDetail);
-      $('office-addr-display').textContent = newOfficeDetail ? `${newOfficeAddr} ${newOfficeDetail}` : newOfficeAddr;
-    }
-    const admin = ['cfg-mileage-gas','cfg-mileage-diesel','cfg-mileage-lpg','cfg-mileage-hybrid','cfg-mult'];
-    admin.forEach(k => save(k, $(k).value));
-    updateFuelInfo();
-    $('settings-modal').classList.remove('show');
-    alert('설정이 저장되었습니다.');
-  });
-
+  // ===== 초기화 =====
   $('add-visit-btn').addEventListener('click', () => { syncVisitsFromInputs(); addVisit(); });
 
-  // 출장일자 변경 시 자동으로 그 날짜 유가 재조회
   $('trip-date').addEventListener('change', () => {
     $('trip-date').classList.remove('err-field');
-    fetchOpinetPricesForTripDate(false);
+    fetchOpinetPricesForTripDate();
   });
 
   ['applicant','department','carnum','fuel-type'].forEach(id => {
@@ -1697,15 +1442,21 @@ ${basisText}
   $('edit-btn').addEventListener('click', editDraft);
   $('pdf-btn').addEventListener('click', handleDownload);
 
+  // 회사 정책 → UI에 반영
+  $('office-addr-display').textContent = CONFIG.officeAddrDetail 
+    ? `${CONFIG.officeAddr} ${CONFIG.officeAddrDetail}` 
+    : CONFIG.officeAddr;
+  $('ver-tag').textContent = CONFIG.version;
+  $('ver-date').textContent = CONFIG.lastUpdated;
+  $('capture-multiplier').textContent = CONFIG.multiplier;
+
   $('trip-date').value = new Date().toISOString().slice(0,10);
   load();
   addVisit();
   updateHomeAddrVisibility();
   updateDownloadButtonLabel();
-  // 화면 리사이즈 시 라벨 재설정 (예: 태블릿 회전)
   window.addEventListener('resize', updateDownloadButtonLabel);
-  // 초기 로드 시 출장일자(오늘) 기준 유가 조회
-  fetchOpinetPricesForTripDate(false);
+  fetchOpinetPricesForTripDate();
 })();
 </script>
 
