@@ -406,7 +406,6 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 #fuel-info .fuel-info-line { display: block; }
 #fuel-info .fuel-info-source { color: var(--gray-500); font-size: 10px; }
 #distance-source { font-size: 11px; color: var(--gray-500); margin-top: 10px; text-align: center; font-weight: 600; letter-spacing: 0.04em; }
-#opinet-status { font-size: 11px; color: var(--gray-500); margin: 0 0 16px; font-weight: 500; }
 
 a { color: var(--sans-black); text-decoration: underline; }
 a:hover { color: var(--sans-mint-deep); }
@@ -629,7 +628,7 @@ a:hover { color: var(--sans-mint-deep); }
         <ol>
           <li>통근거리(자택~회사)는 출장거리에서 제외함</li>
           <li>직출/직퇴 시: 자택 기준 경로와 회사 기준 경로 중 <strong>짧은 거리</strong>를 인정함</li>
-          <li>표준 연비: 공무원 여비업무 처리 기준 (한국석유공사 오피넷 명시)</li>
+          <li>표준 연비: 공무원 여비업무 처리기준 (인사혁신처 「공무원 여비 규정」)</li>
           <li>유가: 한국석유공사 오피넷 일별 전국 평균 판매가 (출장일 기준)</li>
           <li>보정계수 1.3 적용 (차량 감가·소모품·정비비 등 유지비 반영)</li>
         </ol>
@@ -712,18 +711,8 @@ a:hover { color: var(--sans-mint-deep); }
     </div>
     <input type="text" id="cfg-office-addr-detail" placeholder="상세주소 (예: 시그니처타워 서관)" class="mb-16">
 
-    <p class="sec-divider">오피넷 유가 단가 (한국석유공사 전국 주유소 평균가격)</p>
-    <p style="font-size: 11px; color: var(--gray-500); margin: 0 0 10px;">출장일자에 따라 자동 갱신됩니다. <a href="https://www.opinet.co.kr" target="_blank">오피넷</a></p>
-    <button id="fetch-opinet-btn" class="btn-sm mb-8"><i class="ti ti-refresh"></i> 오늘 유가 새로 가져오기</button>
-    <div class="grid-3 mb-8">
-      <div><label class="field-label">휘발유 (원/L)</label><input type="number" id="cfg-gas" min="0" step="1" value="1700"></div>
-      <div><label class="field-label">자동차용경유 (원/L)</label><input type="number" id="cfg-diesel" min="0" step="1" value="1550"></div>
-      <div><label class="field-label">자동차용부탄 (원/L)</label><input type="number" id="cfg-lpg" min="0" step="1" value="1100"></div>
-    </div>
-    <p id="opinet-status"></p>
-
     <p class="sec-divider">연료별 표준 연비 (km/L)</p>
-    <p style="font-size: 11px; color: var(--gray-500); margin: 0 0 10px;">기본값: 공무원 여비업무 처리 기준 (한국석유공사 오피넷 출장유류비 계산기 명시)</p>
+    <p style="font-size: 11px; color: var(--gray-500); margin: 0 0 10px;">기본값: 공무원 여비업무 처리기준 (인사혁신처 「공무원 여비 규정」)</p>
     <div class="grid-4 mb-16">
       <div><label class="field-label">휘발유</label><input type="number" id="cfg-mileage-gas" min="0" step="0.01" value="11.97"></div>
       <div><label class="field-label">경유</label><input type="number" id="cfg-mileage-diesel" min="0" step="0.01" value="12.52"></div>
@@ -761,6 +750,8 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
   let returnType = 'via-office';
   let coordCache = {};
   let currentFuelData = { tradeDate: '', fallback: false, fallbackReason: '' };
+  // 유가는 오피넷에서 자동 조회한 값을 메모리에만 보관 (인풋 없음)
+  let currentPrices = { gasoline: 1700, diesel: 1550, lpg: 1100 };
 
   const FUEL_LABELS = { gasoline: '휘발유', diesel: '경유', lpg: 'LPG', hybrid: '하이브리드' };
   const OFFICIAL_FUEL_NAMES = { gasoline: '휘발유', diesel: '자동차용경유', lpg: 'LPG' };
@@ -810,11 +801,17 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
       if (homeAddr) $('home-addr-2').value = homeAddr;
       if (homeDetail) $('home-addr-2-detail').value = homeDetail;
 
-      const admin = ['cfg-gas','cfg-diesel','cfg-lpg','cfg-mileage-gas','cfg-mileage-diesel','cfg-mileage-lpg','cfg-mileage-hybrid','cfg-mult'];
+      const admin = ['cfg-mileage-gas','cfg-mileage-diesel','cfg-mileage-lpg','cfg-mileage-hybrid','cfg-mult'];
       admin.forEach(k => {
         const v = localStorage.getItem('tc-' + k);
         if (v !== null && $(k)) $(k).value = v;
       });
+
+      // 기존 유가 관련 LocalStorage 정리 (옛 버전 잔여 데이터 제거)
+      localStorage.removeItem('tc-cfg-gas');
+      localStorage.removeItem('tc-cfg-diesel');
+      localStorage.removeItem('tc-cfg-lpg');
+      localStorage.removeItem('tc-opinet-status');
 
       const office = getOfficeAddr();
       $('office-addr-display').textContent = office.full;
@@ -856,7 +853,7 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     const officialName = fuel === 'hybrid' ? '휘발유' : OFFICIAL_FUEL_NAMES[fuel];
     const dateText = tradeDate ? `${tradeDate} 전국평균` : '전국평균';
     
-    let html = `<span class="fuel-info-line"><strong>표준 연비:</strong> ${mileage} km/L <span class="fuel-info-source">— 공무원 여비업무 처리 기준 (한국석유공사 오피넷)</span></span>`;
+    let html = `<span class="fuel-info-line"><strong>표준 연비:</strong> ${mileage} km/L <span class="fuel-info-source">— 공무원 여비업무 처리기준 (인사혁신처)</span></span>`;
     if (fuel === 'hybrid') {
       html += `<span class="fuel-info-line"><strong>유가:</strong> ${fmt(price)} 원/L <span class="fuel-info-source">— 한국석유공사 오피넷 ${officialName} ${dateText} (하이브리드는 휘발유 단가 적용)</span></span>`;
     } else {
@@ -884,9 +881,8 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     return parseFloat($(id).value) || 12;
   }
   function getFuelPrice(fuel) {
-    if (fuel === 'hybrid') return parseFloat($('cfg-gas').value) || 1700;
-    const id = 'cfg-' + (fuel === 'gasoline' ? 'gas' : fuel);
-    return parseFloat($(id).value) || 1700;
+    if (fuel === 'hybrid') return currentPrices.gasoline;
+    return currentPrices[fuel] || 1700;
   }
 
   // 출장일자 기반 유가 조회
@@ -899,12 +895,10 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
       const res = await fetch(url);
       const data = await res.json();
       if (data.success && data.prices) {
-        if (data.prices.gasoline) $('cfg-gas').value = data.prices.gasoline;
-        if (data.prices.diesel) $('cfg-diesel').value = data.prices.diesel;
-        if (data.prices.lpg) $('cfg-lpg').value = data.prices.lpg;
-        save('cfg-gas', $('cfg-gas').value);
-        save('cfg-diesel', $('cfg-diesel').value);
-        save('cfg-lpg', $('cfg-lpg').value);
+        // 메모리 변수에만 저장 (LocalStorage 캐시 X)
+        if (data.prices.gasoline) currentPrices.gasoline = data.prices.gasoline;
+        if (data.prices.diesel) currentPrices.diesel = data.prices.diesel;
+        if (data.prices.lpg) currentPrices.lpg = data.prices.lpg;
 
         currentFuelData = {
           tradeDate: data.tradeDate || '',
@@ -912,30 +906,15 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
           fallbackReason: data.fallbackReason || ''
         };
 
-        const tradeDate = formatTradeDate(data.tradeDate);
-        let statusMsg;
-        if (data.fallback) {
-          if (data.fallbackReason === 'exceeds_7days') {
-            statusMsg = `✓ 출장일 7일 초과 → 오늘(${tradeDate}) 유가 적용`;
-          } else if (data.fallbackReason === 'future_date') {
-            statusMsg = `✓ 출장일 미도래 → 오늘(${tradeDate}) 유가 적용`;
-          } else {
-            statusMsg = `✓ ${tradeDate} 유가 (fallback)`;
-          }
-        } else {
-          statusMsg = `✓ 출장일(${tradeDate}) 유가 적용`;
-        }
-        $('opinet-status').textContent = statusMsg;
-
         updateFuelInfo();
+        const tradeDate = formatTradeDate(data.tradeDate);
         if (showAlert) {
           alert(`유가 갱신 완료\n기준일: ${tradeDate}${data.fallback ? ' (fallback)' : ''}\n\n휘발유: ${fmt(data.prices.gasoline)}원\n자동차용경유: ${fmt(data.prices.diesel)}원\n자동차용부탄: ${fmt(data.prices.lpg)}원`);
         }
         return true;
       } else { throw new Error(data.error || '데이터 없음'); }
     } catch (e) {
-      $('opinet-status').textContent = `⚠️ 자동 조회 실패: ${e.message}`;
-      if (showAlert) alert('오피넷 자동 조회 실패. 수동 입력값을 사용합니다.\n\n' + e.message);
+      if (showAlert) alert('오피넷 자동 조회 실패. 기본 단가를 사용합니다.\n\n' + e.message);
       return false;
     }
   }
@@ -1446,7 +1425,7 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
 • 유가 ${fmt(fuelPrice)}원/L: 한국석유공사 오피넷 휘발유 ${tradeDate} 전국평균 (하이브리드는 휘발유 단가 적용)${dateNote}`;
     } else {
       basisText = `<strong>적용 단가 출처</strong>
-• 연비 ${mileage}km/L: 공무원 여비업무 처리 기준 ${fuelLabel} 연비 (한국석유공사 오피넷 출장유류비 계산기 명시)<br>
+• 연비 ${mileage}km/L: 공무원 여비업무 처리기준 ${fuelLabel} 연비 (인사혁신처 「공무원 여비 규정」)<br>
 • 유가 ${fmt(fuelPrice)}원/L: 한국석유공사 오피넷 ${OFFICIAL_FUEL_NAMES[fuelType]} ${tradeDate} 전국평균${dateNote}`;
     }
     $('cap-basis').innerHTML = basisText;
@@ -1578,7 +1557,7 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
     
     const basisText = c.fuelType === 'hybrid'
       ? `- 연비 ${c.mileage}km/L: 회사 자체 기준 (하이브리드)\n- 유가 ${fmt(c.fuelPrice)}원/L: 한국석유공사 오피넷 휘발유 ${c.opinetTradeDate} 전국평균${dateNote}`
-      : `- 연비 ${c.mileage}km/L: 공무원 여비업무 처리 기준 ${c.fuelLabel} 연비 (오피넷)\n- 유가 ${fmt(c.fuelPrice)}원/L: 한국석유공사 오피넷 ${OFFICIAL_FUEL_NAMES[c.fuelType]} ${c.opinetTradeDate} 전국평균${dateNote}`;
+      : `- 연비 ${c.mileage}km/L: 공무원 여비업무 처리기준 ${c.fuelLabel} 연비 (인사혁신처)\n- 유가 ${fmt(c.fuelPrice)}원/L: 한국석유공사 오피넷 ${OFFICIAL_FUEL_NAMES[c.fuelType]} ${c.opinetTradeDate} 전국평균${dateNote}`;
 
     const text = `[출장 유류비 산정서]
 작성일: ${new Date().toLocaleDateString('ko-KR')}
@@ -1586,7 +1565,7 @@ const DEFAULT_OFFICE_ADDR_DETAIL = "시그니처타워 서관";
 [사규 요약]
 ① 통근거리(자택~회사)는 출장거리에서 제외
 ② 직출/직퇴 시 집 경로와 회사 경로 중 짧은 거리 인정
-③ 표준 연비: 공무원 여비업무 처리 기준 (오피넷 명시)
+③ 표준 연비: 공무원 여비업무 처리기준 (인사혁신처)
 ④ 유가: 한국석유공사 오피넷 일별 전국 평균 (출장일 기준)
 ⑤ 보정계수 1.3 (차량 유지비 반영)
 
@@ -1675,20 +1654,11 @@ ${basisText}
       save('office-addr-detail', newOfficeDetail);
       $('office-addr-display').textContent = newOfficeDetail ? `${newOfficeAddr} ${newOfficeDetail}` : newOfficeAddr;
     }
-    const admin = ['cfg-gas','cfg-diesel','cfg-lpg','cfg-mileage-gas','cfg-mileage-diesel','cfg-mileage-lpg','cfg-mileage-hybrid','cfg-mult'];
+    const admin = ['cfg-mileage-gas','cfg-mileage-diesel','cfg-mileage-lpg','cfg-mileage-hybrid','cfg-mult'];
     admin.forEach(k => save(k, $(k).value));
     updateFuelInfo();
     $('settings-modal').classList.remove('show');
     alert('설정이 저장되었습니다.');
-  });
-
-  // "오늘 유가 새로 가져오기" 버튼 - 출장일자 무시하고 오늘만
-  $('fetch-opinet-btn').addEventListener('click', async () => {
-    const originalTripDate = $('trip-date').value;
-    $('trip-date').value = new Date().toISOString().slice(0,10);
-    await fetchOpinetPricesForTripDate(true);
-    $('trip-date').value = originalTripDate;
-    fetchOpinetPricesForTripDate(false); // 다시 출장일 기준으로 복원
   });
 
   $('add-visit-btn').addEventListener('click', () => { syncVisitsFromInputs(); addVisit(); });
