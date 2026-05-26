@@ -878,7 +878,7 @@ const CONFIG = {
   };
 
   async function kakaoGeocode(addr) {
-    if (!CONFIG.kakaoApiKey || CONFIG.kakaoApiKey === '1652cd767cbc3a6a2c1af26e73d7890b') {
+    if (!CONFIG.kakaoApiKey || CONFIG.kakaoApiKey === '여기에_본인_카카오_REST_API_키_입력') {
       throw new Error('CONFIG에 카카오 API 키를 설정해주세요');
     }
     if (coordCache[addr]) return coordCache[addr];
