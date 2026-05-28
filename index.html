@@ -458,8 +458,10 @@ a:hover { color: var(--sans-mint-deep); }
   </div>
 
   <div class="section-card no-print">
-    <p class="section-title"><i class="ti ti-building"></i> 회사 주소 <i class="ti ti-lock-filled lock-icon"></i></p>
-    <div class="fixed-display" id="office-addr-display"></div>
+    <p class="section-title"><i class="ti ti-building"></i> 출발/도착 기준 지점<span class="req">*</span></p>
+    <p style="font-size: 11px; color: var(--gray-500); margin: 0 0 12px; letter-spacing: 0.04em;">출근/퇴근 시 기준이 되는 지점을 선택하세요. (소속 사업장)</p>
+    <select id="office-select"></select>
+    <div class="fixed-display" id="office-addr-display" style="margin-top: 10px;"></div>
   </div>
 
   <div class="section-card no-print">
@@ -573,6 +575,7 @@ a:hover { color: var(--sans-mint-deep); }
           <tr><td class="label">출장일자</td><td id="cap-date"></td></tr>
           <tr><td class="label">출장 목적</td><td id="cap-purpose"></td></tr>
           <tr><td class="label">차량</td><td id="cap-vehicle"></td></tr>
+          <tr><td class="label">기준 지점</td><td id="cap-office"></td></tr>
           <tr><td class="label">방문/퇴근</td><td id="cap-pattern"></td></tr>
         </table>
       </div>
@@ -639,11 +642,16 @@ a:hover { color: var(--sans-mint-deep); }
 const CONFIG = {
   // 버전 정보 (정책/기능 변경 시 함께 업데이트)
   version: "v1.0",
-  lastUpdated: "2026-05-26",
+  lastUpdated: "2026-05-28",
 
-  // 회사 주소
-  officeAddr: "서울특별시 중구 청계천로 100",
-  officeAddrDetail: "시그니처타워 서관",
+  // 회사 지점 목록 (출발/도착 기준 위치)
+  // 직원이 드롭다운에서 선택. 첫 번째 항목이 기본 선택됨.
+  offices: [
+    { name: "본사",        addr: "서울특별시 중구 청계천로 100", detail: "시그니처타워 서관" },
+    { name: "공장 (안산)",  addr: "경기도 안산시 단원구 별망로 35", detail: "" },
+    { name: "익선점",      addr: "서울특별시 종로구 수표로28길 30", detail: "" },
+    { name: "신세계강남",   addr: "서울특별시 서초구 신반포로 176", detail: "" }
+  ],
 
   // 보정계수 (차량 감가·소모품·정비비 등 유지비 반영)
   multiplier: 1.3,
@@ -671,6 +679,7 @@ const CONFIG = {
   const fmt = (n) => Math.round(n).toLocaleString('ko-KR');
   let lastCalc = null;
   let officeCoord = null;
+  let selectedOfficeIdx = 0;  // 선택된 회사 지점 인덱스
   let receipts = { toll: null, parking: null };
   let visits = [];
   let departType = 'via-office';
@@ -740,6 +749,13 @@ const CONFIG = {
         'tc-opinet-status', 'tc-opinet-trade-date'
       ];
       obsoleteKeys.forEach(k => localStorage.removeItem(k));
+
+      // 마지막 선택한 지점 복원
+      const savedOfficeIdx = localStorage.getItem('tc-selected-office-idx');
+      if (savedOfficeIdx !== null) {
+        const idx = parseInt(savedOfficeIdx);
+        if (idx >= 0 && idx < CONFIG.offices.length) selectedOfficeIdx = idx;
+      }
     } catch (e) {}
   }
   function save(key, value) { try { localStorage.setItem('tc-' + key, value); } catch (e) {} }
@@ -925,9 +941,18 @@ const CONFIG = {
     catch (e) { return haversine(a, b); }
   }
 
+  // 현재 선택된 지점 정보
+  function getSelectedOffice() {
+    return CONFIG.offices[selectedOfficeIdx] || CONFIG.offices[0];
+  }
+  function getOfficeFullAddr() {
+    const o = getSelectedOffice();
+    return o.detail ? `${o.addr} ${o.detail}` : o.addr;
+  }
+
   async function getOfficeCoord() {
     if (officeCoord) return officeCoord;
-    officeCoord = await kakaoGeocode(CONFIG.officeAddr);
+    officeCoord = await kakaoGeocode(getSelectedOffice().addr);
     return officeCoord;
   }
 
@@ -1252,6 +1277,8 @@ const CONFIG = {
     $('cap-date').textContent = tripDate;
     $('cap-purpose').textContent = purpose;
     $('cap-vehicle').textContent = `${fuelLabel} (${mileage}km/L) / ${carNumber}`;
+    const selOffice = getSelectedOffice();
+    $('cap-office').textContent = `${selOffice.name} (${getOfficeFullAddr()})`;
     $('cap-pattern').textContent = `${departLabel} → ${returnLabel}`;
     $('capture-multiplier').textContent = multiplier;
 
@@ -1442,16 +1469,34 @@ const CONFIG = {
   $('edit-btn').addEventListener('click', editDraft);
   $('pdf-btn').addEventListener('click', handleDownload);
 
-  // 회사 정책 → UI에 반영
-  $('office-addr-display').textContent = CONFIG.officeAddrDetail 
-    ? `${CONFIG.officeAddr} ${CONFIG.officeAddrDetail}` 
-    : CONFIG.officeAddr;
+  // 회사 지점 드롭다운 채우기
+  function renderOfficeSelect() {
+    const sel = $('office-select');
+    sel.innerHTML = CONFIG.offices.map((o, i) =>
+      `<option value="${i}"${i === selectedOfficeIdx ? ' selected' : ''}>${o.name}</option>`
+    ).join('');
+  }
+  function updateOfficeDisplay() {
+    $('office-addr-display').textContent = getOfficeFullAddr();
+  }
+
+  // 지점 변경 시: 좌표 캐시 초기화 + 거리 재조회 강제
+  $('office-select').addEventListener('change', (e) => {
+    selectedOfficeIdx = parseInt(e.target.value) || 0;
+    officeCoord = null;  // 좌표 다시 계산하도록
+    save('selected-office-idx', selectedOfficeIdx);
+    updateOfficeDisplay();
+    invalidateDistance();
+  });
+
   $('ver-tag').textContent = CONFIG.version;
   $('ver-date').textContent = CONFIG.lastUpdated;
   $('capture-multiplier').textContent = CONFIG.multiplier;
 
   $('trip-date').value = new Date().toISOString().slice(0,10);
   load();
+  renderOfficeSelect();   // load로 복원된 selectedOfficeIdx 반영
+  updateOfficeDisplay();
   addVisit();
   updateHomeAddrVisibility();
   updateDownloadButtonLabel();
