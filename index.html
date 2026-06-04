@@ -417,6 +417,7 @@ a:hover { color: var(--sans-mint-deep); }
         <label class="field-label">연료 종류<span class="req">*</span></label>
         <select id="fuel-type">
           <option value="gasoline" selected>휘발유</option>
+          <option value="premiumGasoline">고급휘발유</option>
           <option value="diesel">경유</option>
           <option value="lpg">LPG</option>
           <option value="hybrid">하이브리드</option>
@@ -641,8 +642,8 @@ a:hover { color: var(--sans-mint-deep); }
 // ============================================================
 const CONFIG = {
   // 버전 정보 (정책/기능 변경 시 함께 업데이트)
-  version: "v1.0",
-  lastUpdated: "2026-05-28",
+  version: "v1.1",
+  lastUpdated: "2026-06-04",
 
   // 회사 지점 목록 (출발/도착 기준 위치)
   // 직원이 드롭다운에서 선택. 첫 번째 항목이 기본 선택됨.
@@ -658,8 +659,10 @@ const CONFIG = {
 
   // 연료별 표준 연비 (km/L)
   // 출처: 인사혁신처 예규 「공무원보수 등의 업무지침」 공무원여비업무 처리기준
+  // 고급휘발유는 정부 공식 별도 기준 없어 휘발유 연비를 준용 (회사 사규 규정)
   mileage: {
     gasoline: 11.97,
+    premiumGasoline: 11.97,  // 휘발유 연비 준용
     diesel: 12.52,
     lpg: 8.83,
     hybrid: 15.37
@@ -686,10 +689,10 @@ const CONFIG = {
   let returnType = 'via-office';
   let coordCache = {};
   let currentFuelData = { tradeDate: '', fallback: false, fallbackReason: '' };
-  let currentPrices = { gasoline: 1700, diesel: 1550, lpg: 1100 };
+  let currentPrices = { gasoline: 1700, premiumGasoline: 2100, diesel: 1550, lpg: 1100 };
 
-  const FUEL_LABELS = { gasoline: '휘발유', diesel: '경유', lpg: 'LPG', hybrid: '하이브리드' };
-  const OFFICIAL_FUEL_NAMES = { gasoline: '휘발유', diesel: '자동차용경유', lpg: 'LPG' };
+  const FUEL_LABELS = { gasoline: '휘발유', premiumGasoline: '고급휘발유', diesel: '경유', lpg: 'LPG', hybrid: '하이브리드' };
+  const OFFICIAL_FUEL_NAMES = { gasoline: '휘발유', premiumGasoline: '고급휘발유', diesel: '자동차용경유', lpg: 'LPG' };
 
   function updateHomeAddrVisibility() {
     const departDirect = departType === 'direct';
@@ -774,7 +777,7 @@ const CONFIG = {
     return CONFIG.mileage[fuel] || 12;
   }
   function getFuelPrice(fuel) {
-    if (fuel === 'hybrid') return currentPrices.gasoline;
+    if (fuel === 'hybrid') return currentPrices.gasoline;  // 하이브리드는 휘발유 단가 준용
     return currentPrices[fuel] || 1700;
   }
 
@@ -786,7 +789,14 @@ const CONFIG = {
     const officialName = fuel === 'hybrid' ? '휘발유' : OFFICIAL_FUEL_NAMES[fuel];
     const dateText = tradeDate ? `${tradeDate} 전국평균` : '전국평균';
     
-    let html = `<span class="fuel-info-line"><strong>표준 연비:</strong> ${mileage} km/L <span class="fuel-info-source">— 공무원 여비업무 처리기준 (인사혁신처)</span></span>`;
+    // 표준 연비 안내
+    let mileageNote = '— 공무원 여비업무 처리기준 (인사혁신처)';
+    if (fuel === 'premiumGasoline') {
+      mileageNote = '— 공무원 여비업무 처리기준 휘발유 연비 준용 (인사혁신처, 고급휘발유 별도 기준 부재)';
+    }
+    let html = `<span class="fuel-info-line"><strong>표준 연비:</strong> ${mileage} km/L <span class="fuel-info-source">${mileageNote}</span></span>`;
+    
+    // 유가 안내
     if (fuel === 'hybrid') {
       html += `<span class="fuel-info-line"><strong>유가:</strong> ${fmt(price)} 원/L <span class="fuel-info-source">— 한국석유공사 오피넷 ${officialName} ${dateText} (하이브리드는 휘발유 단가 준용)</span></span>`;
     } else {
@@ -819,6 +829,7 @@ const CONFIG = {
       const data = await res.json();
       if (data.success && data.prices) {
         if (data.prices.gasoline) currentPrices.gasoline = data.prices.gasoline;
+        if (data.prices.premiumGasoline) currentPrices.premiumGasoline = data.prices.premiumGasoline;
         if (data.prices.diesel) currentPrices.diesel = data.prices.diesel;
         if (data.prices.lpg) currentPrices.lpg = data.prices.lpg;
 
@@ -1327,6 +1338,10 @@ const CONFIG = {
       basisText = `<strong>적용 단가 출처</strong>
 • 연비 ${mileage}km/L: 공무원 여비업무 처리기준 하이브리드 연비 (인사혁신처 예규 「공무원보수 등의 업무지침」)<br>
 • 유가 ${fmt(fuelPrice)}원/L: 한국석유공사 오피넷 휘발유 ${tradeDate} 전국평균 (하이브리드는 휘발유 단가 준용)${dateNote}`;
+    } else if (fuelType === 'premiumGasoline') {
+      basisText = `<strong>적용 단가 출처</strong>
+• 연비 ${mileage}km/L: 공무원 여비업무 처리기준 휘발유 연비 준용 (인사혁신처 예규 「공무원보수 등의 업무지침」, 고급휘발유 별도 기준 부재)<br>
+• 유가 ${fmt(fuelPrice)}원/L: 한국석유공사 오피넷 고급휘발유 ${tradeDate} 전국평균${dateNote}`;
     } else {
       basisText = `<strong>적용 단가 출처</strong>
 • 연비 ${mileage}km/L: 공무원 여비업무 처리기준 ${fuelLabel} 연비 (인사혁신처 예규 「공무원보수 등의 업무지침」)<br>
