@@ -582,7 +582,17 @@ a:hover { color: var(--sans-mint-deep); }
       </div>
 
       <div class="capture-section">
-        <p class="capture-section-title">2. 이동 경로 및 거리 산정</p>
+        <p class="capture-section-title">2. 방문 출장지</p>
+        <table class="capture-route-table" id="cap-visits-table">
+          <thead>
+            <tr><th style="width: 80px;">순번</th><th>주소</th></tr>
+          </thead>
+          <tbody id="cap-visits-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="capture-section">
+        <p class="capture-section-title">3. 이동 경로 및 거리 산정</p>
         <table class="capture-route-table">
           <thead>
             <tr><th>구간</th><th style="text-align:right;">실거리</th><th style="text-align:right;">인정거리</th><th>산정 사유</th></tr>
@@ -596,13 +606,13 @@ a:hover { color: var(--sans-mint-deep); }
       </div>
 
       <div class="capture-section">
-        <p class="capture-section-title">3. 유류비 계산식</p>
+        <p class="capture-section-title">4. 유류비 계산식</p>
         <div class="capture-calc" id="cap-formula"></div>
         <div class="capture-basis" id="cap-basis"></div>
       </div>
 
       <div class="capture-section">
-        <p class="capture-section-title">4. 지급 내역</p>
+        <p class="capture-section-title">5. 지급 내역</p>
         <table class="capture-total-table">
           <tr><td>유류비</td><td style="text-align: right;" id="cap-fuel"></td></tr>
           <tr><td>통행료 <span id="cap-toll-mark" class="receipt-attached-mark" style="display:none;">영수증 첨부</span></td><td style="text-align: right;" id="cap-toll"></td></tr>
@@ -612,7 +622,7 @@ a:hover { color: var(--sans-mint-deep); }
       </div>
 
       <div class="capture-section" id="cap-receipts-section" style="display: none; margin-bottom: 0;">
-        <p class="capture-section-title">5. 영수증</p>
+        <p class="capture-section-title">6. 영수증</p>
         <div class="capture-receipts">
           <div id="cap-toll-receipt-wrap" style="display: none;">
             <p class="capture-receipt-label">통행료 영수증</p>
@@ -642,8 +652,8 @@ a:hover { color: var(--sans-mint-deep); }
 // ============================================================
 const CONFIG = {
   // 버전 정보 (정책/기능 변경 시 함께 업데이트)
-  version: "v1.1",
-  lastUpdated: "2026-06-04",
+  version: "v1.2",
+  lastUpdated: "2026-06-08",
 
   // 회사 지점 목록 (출발/도착 기준 위치)
   // 직원이 드롭다운에서 선택. 첫 번째 항목이 기본 선택됨.
@@ -1292,6 +1302,17 @@ const CONFIG = {
     $('cap-office').textContent = `${selOffice.name} (${getOfficeFullAddr()})`;
     $('cap-pattern').textContent = `${departLabel} → ${returnLabel}`;
     $('capture-multiplier').textContent = multiplier;
+
+    // 방문 출장지 목록
+    $('cap-visits-tbody').innerHTML = visits.map((v, i) => {
+      const fullAddr = v.detail ? `${v.addr} ${v.detail}` : v.addr;
+      return `
+        <tr>
+          <td style="font-weight: 700;">출장지 ${i + 1}</td>
+          <td>${fullAddr}</td>
+        </tr>
+      `;
+    }).join('');
 
     const rows = [];
     if (departType === 'via-office') {
