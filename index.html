@@ -36,13 +36,13 @@ body {
   background: var(--gray-50);
   color: var(--sans-black);
   min-height: 100vh;
-  padding: 2rem 1rem 4rem;
+  padding: 0 0 4rem;
   -webkit-font-smoothing: antialiased;
   font-size: 14px;
   line-height: 1.6;
 }
 
-.wrap { width: 100%; max-width: 720px; margin: 0 auto; }
+.wrap { width: calc(100% - 2rem); max-width: 720px; margin: 2rem auto 0; }
 
 .header-bar { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; }
 .header-text h1 {
@@ -379,15 +379,33 @@ a:hover { color: var(--sans-mint-deep); }
   .capture-receipts { grid-template-columns: 1fr; }
   .radio-group { grid-template-columns: 1fr; }
 }
+
+/* Shared service navigation, matching the taxi checker. */
+.site-header { max-width:1120px; margin:0 auto; padding:25px 28px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #dde4df; background:#f5f7f4; color:#111a16; }
+.site-header .brand { font-size:20px; font-weight:850; letter-spacing:.06em; text-decoration:none; color:#111a16; }
+.site-header .brand span { font-size:12px; font-weight:500; letter-spacing:0; border-left:1px solid #bfc9c2; padding-left:15px; margin-left:12px; color:#65716a; }
+.site-header nav { display:flex; gap:22px; font-size:12px; font-weight:650; }
+.site-header nav a { color:#65716a; text-decoration:none; }
+.site-header nav a[aria-current="page"] { color:#111a16; border-bottom:2px solid #111a16; padding-bottom:5px; }
+.site-header a:focus-visible { outline:2px solid #286647; outline-offset:5px; }
+@media (max-width:520px) {
+  .site-header { padding:18px; }
+  .site-header .brand span { display:none; }
+  .site-header nav { gap:14px; font-size:11px; }
+}
 </style>
 </head>
 <body>
 
-<div class="wrap">
-  <a href="./taxi/" class="no-print" style="display:flex;justify-content:space-between;gap:12px;align-items:center;background:#C0FFEE;color:#111a16;border:1px solid #a8dfcb;border-radius:4px;padding:14px 16px;margin-bottom:20px;text-decoration:none;font-size:12px;font-weight:700">
-    <span>택시 이용 자가검증 <small style="font-weight:400;margin-left:6px">미팅 시간에 맞춘 출발 시각과 이용 기준 확인</small></span><span aria-hidden="true">↗</span>
-  </a>
+<header class="site-header no-print">
+  <a class="brand" href="./">WAKE <span>업무 이동</span></a>
+  <nav aria-label="서비스 선택">
+    <a href="./" aria-current="page">유류비 산정</a>
+    <a href="./taxi/">택시 자가검증</a>
+  </nav>
+</header>
 
+<div class="wrap">
   <div class="header-bar no-print">
     <div class="header-text">
       <h1>출장 유류비 산정</h1>
