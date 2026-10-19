@@ -9,3 +9,5 @@
 /* Compact headings follow the existing fuel calculator. */
 .wrap{padding-top:26px}h1,.intro h1{font-size:20px;letter-spacing:-.025em}.lead{font-size:12px;margin:10px 0 18px}.version{margin-top:0}.empty-result h2{font-size:17px}.empty-result{min-height:240px;background:#fff}.candidate{display:block;text-align:left;margin-top:10px;width:100%;white-space:normal}.print-only{display:none}.big{overflow-wrap:anywhere}.comparison .big{font-size:20px}
 @media print{.layout{display:none!important}.print-only:not([hidden]){display:block!important}.print-only pre{white-space:pre-wrap;font:13px/2 Pretendard,sans-serif}body.print-blocked .print-only{display:none!important}body.print-blocked::after{content:'먼저 이동 시간을 조회해 주세요.'}}
+
+.office-shortcut{display:block;margin:-6px 0 18px;padding:0;color:#286647}

@@ -81,7 +81,7 @@ form.addEventListener('submit', async event => {
   } finally { clearTimeout(timeout); if (current === generation) idle(); }
 });
 form.addEventListener('input', invalidate);
-$('reset').addEventListener('click', () => { HTMLFormElement.prototype.reset.call(form); invalidate(); });
+$('reset').addEventListener('click', () => { HTMLFormElement.prototype.reset.call(form); $('origin').value = window.TAXI_CONFIG.headquartersAddress; invalidate(); });
 $('open-map').addEventListener('click', () => {
   if (!$('destination').value.trim()) return error('미팅 장소를 입력해 주세요.');
   window.open(routeSearchUrl($('destination').value), '_blank', 'noopener,noreferrer');
@@ -101,3 +101,6 @@ $('sample').addEventListener('click', () => {
   render(input,{ source:'가상 예시',checkedAt:new Date().toISOString(),targetArrival:new Date(arrival).toISOString(),origin:{resolved:input.origin},destination:{resolved:input.destination},transit:{durationSeconds:4800,departureAt:new Date(arrival-4800000).toISOString(),fare:2500},taxi:{durationSeconds:2700,departureAt:new Date(arrival-2700000).toISOString(),fare:35000},note:'이 예시는 실제 지도 조회 결과가 아니며 신청에 사용할 수 없습니다.' },true);
 });
 invalidate();
+
+$('origin').value = window.TAXI_CONFIG.headquartersAddress;
+document.querySelectorAll('.office-shortcut').forEach(button => button.addEventListener('click', () => { $(button.dataset.for).value = window.TAXI_CONFIG.headquartersAddress; invalidate(); }));

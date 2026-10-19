@@ -1,6 +1,6 @@
 # 택시 이용 자가검증
 
-기존 유류비 페이지와 별도로 `/taxi/`에 주소 기반 자동 비교 화면을 추가합니다. 원본 `index.html`은 변경 대상에서 제외합니다.
+기존 유류비 페이지와 별도로 `/taxi/`에 주소 기반 자동 비교 화면을 추가합니다. 본사 주소는 서울특별시 중구 을지로 264로 반영합니다.
 
 ## 동작
 
@@ -27,7 +27,7 @@ Node.js 20 이상. 서버 환경에 `KAKAO_REST_API_KEY`를 설정한 뒤 `node 
 
 ## 공개 서버 연결
 
-정적 GitHub Pages는 REST 비밀 키를 보관할 수 없으므로 별도 서버 연결이 필요합니다. 현재 새 서버 프로젝트 생성은 승인 대기이며 공개 배포되지 않았습니다.
+정적 GitHub Pages는 REST 비밀 키를 보관할 수 없으므로 별도 서버 연결이 필요합니다. Vercel 프로젝트는 생성하지 않습니다. 기존 유류비의 Cloudflare Worker 등 기존 실행 환경에 경로 조회 기능을 연결할 수 있습니다. 해당 연결은 아직 배포되지 않았습니다.
 
 - 서버 환경: `KAKAO_REST_API_KEY`, `ALLOWED_ORIGINS` (기본 `https://jslee1019.github.io`).
 - 배포 후 `taxi/config.js`의 `routingEndpoint`를 서버의 `/api/compare` URL로 지정합니다.
