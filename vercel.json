@@ -1,0 +1,4 @@
+{
+  "functions": { "api/compare.mjs": { "maxDuration": 30 } },
+  "regions": ["icn1"]
+}
