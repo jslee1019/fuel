@@ -384,6 +384,9 @@ a:hover { color: var(--sans-mint-deep); }
 <body>
 
 <div class="wrap">
+  <a href="./taxi/" class="no-print" style="display:flex;justify-content:space-between;gap:12px;align-items:center;background:#C0FFEE;color:#111a16;border:1px solid #a8dfcb;border-radius:4px;padding:14px 16px;margin-bottom:20px;text-decoration:none;font-size:12px;font-weight:700">
+    <span>택시 이용 자가검증 <small style="font-weight:400;margin-left:6px">미팅 시간에 맞춘 출발 시각과 이용 기준 확인</small></span><span aria-hidden="true">↗</span>
+  </a>
 
   <div class="header-bar no-print">
     <div class="header-text">
@@ -652,13 +655,13 @@ a:hover { color: var(--sans-mint-deep); }
 // ============================================================
 const CONFIG = {
   // 버전 정보 (정책/기능 변경 시 함께 업데이트)
-  version: "v1.3",
-  lastUpdated: "2026-06-08",
+  version: "v1.4",
+  lastUpdated: "2026-10-19",
 
   // 회사 지점 목록 (출발/도착 기준 위치)
   // 직원이 드롭다운에서 선택. 첫 번째 항목이 기본 선택됨.
   offices: [
-    { name: "본사",        addr: "서울특별시 중구 청계천로 100", detail: "시그니처타워 서관" },
+    { name: "본사",        addr: "서울특별시 중구 을지로 264", detail: "" },
     { name: "공장 (안산)",  addr: "경기도 안산시 단원구 별망로 35", detail: "" },
     { name: "익선점",      addr: "서울특별시 종로구 수표로28길 30", detail: "" },
     { name: "신세계강남",   addr: "서울특별시 서초구 신반포로 176", detail: "" },
@@ -679,9 +682,8 @@ const CONFIG = {
     hybrid: 15.37
   },
 
-  // API 키 - 카카오 REST API (좌표 변환용)
-  // 카카오 개발자 사이트(developers.kakao.com)에서 발급
-  kakaoApiKey: "1652cd767cbc3a6a2c1af26e73d7890b",
+  // 주소 좌표 조회 (키는 Cloudflare Secret으로 보관)
+  geocodeUrl: "https://wakefuel.jslee-43a.workers.dev/geocode",
 
   // 워커 URL (유가 조회 프록시)
   workerOpinetUrl: "https://wakefuel.jslee-43a.workers.dev/opinet"
@@ -916,28 +918,15 @@ const CONFIG = {
   };
 
   async function kakaoGeocode(addr) {
-    if (!CONFIG.kakaoApiKey || CONFIG.kakaoApiKey === '여기에_본인_카카오_REST_API_키_입력') {
-      throw new Error('CONFIG에 카카오 API 키를 설정해주세요');
-    }
     if (coordCache[addr]) return coordCache[addr];
-    const url = `https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(addr)}`;
-    const res = await fetch(url, { headers: { 'Authorization': `KakaoAK ${CONFIG.kakaoApiKey}` } });
-    if (!res.ok) {
-      if (res.status === 401) throw new Error('카카오 API 키가 잘못되었습니다');
-      throw new Error('주소 변환 실패 (HTTP ' + res.status + ')');
-    }
+    const res = await fetch(CONFIG.geocodeUrl, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ address: addr }), signal: AbortSignal.timeout(15000)
+    });
     const data = await res.json();
-    if (!data.documents || data.documents.length === 0) {
-      const url2 = `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(addr)}`;
-      const res2 = await fetch(url2, { headers: { 'Authorization': `KakaoAK ${CONFIG.kakaoApiKey}` } });
-      if (!res2.ok) throw new Error('주소를 찾을 수 없음');
-      const data2 = await res2.json();
-      if (!data2.documents || data2.documents.length === 0) throw new Error('주소를 찾을 수 없음: ' + addr);
-      const coord = { lat: parseFloat(data2.documents[0].y), lng: parseFloat(data2.documents[0].x) };
-      coordCache[addr] = coord;
-      return coord;
-    }
-    const coord = { lat: parseFloat(data.documents[0].y), lng: parseFloat(data.documents[0].x) };
+    if (!res.ok) throw new Error(data.message || '주소 변환 실패');
+    if (!Number.isFinite(data.lat) || !Number.isFinite(data.lng)) throw new Error('주소 좌표를 확인할 수 없습니다');
+    const coord = { lat: data.lat, lng: data.lng };
     coordCache[addr] = coord;
     return coord;
   }

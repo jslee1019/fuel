@@ -10,7 +10,7 @@ async function getJson(url, key, fetcher) {
   return response.json();
 }
 
-async function resolvePlace(text, field, key, fetcher) {
+export async function resolvePlace(text, field, key, fetcher = fetch) {
   const address = await getJson(`https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(text)}`, key, fetcher);
   let matches = address.documents || [];
   if (matches.length === 1) return { x: Number(matches[0].x), y: Number(matches[0].y), label: matches[0].road_address?.address_name || matches[0].address_name };

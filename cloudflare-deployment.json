@@ -1,0 +1,48 @@
+{
+  "main_module": "worker.mjs",
+  "compatibility_date": "2026-05-21",
+  "compatibility_flags": [],
+  "usage_model": "standard",
+  "keep_bindings": [
+    "secret_text"
+  ],
+  "bindings": [
+    {
+      "type": "ratelimit",
+      "name": "MAP_RATE_LIMITER",
+      "namespace_id": "2026101901",
+      "simple": {
+        "limit": 30,
+        "period": 60
+      }
+    },
+    {
+      "type": "ratelimit",
+      "name": "MAP_SHARED_LIMITER",
+      "namespace_id": "2026101902",
+      "simple": {
+        "limit": 120,
+        "period": 60
+      }
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "redact_query_string": false,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true,
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": false,
+      "persist": true,
+      "head_sampling_rate": 1
+    }
+  },
+  "logpush": false,
+  "tags": [],
+  "tail_consumers": []
+}

@@ -1,7 +1,7 @@
 name: Travel checks
 on:
   push:
-    paths: ['taxi/**', 'server/**', 'tests/**', 'package.json', '.github/workflows/test.yml']
+    paths: ['index.html', 'worker.mjs', 'taxi/**', 'server/**', 'api/**', 'tests/**', 'package.json', '.github/workflows/test.yml']
   pull_request:
 permissions:
   contents: read
@@ -16,4 +16,6 @@ jobs:
         with:
           node-version: '22'
       - run: node --check taxi/app.js
+      - run: node --check worker.mjs
+      - run: node --check server/edge-handler.mjs
       - run: node --test tests/*.test.js

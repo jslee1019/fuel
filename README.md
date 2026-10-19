@@ -16,7 +16,9 @@
 ## 구성
 
 - `taxi/`: GitHub Pages 정적 화면. 비밀 키 없음.
-- `api/compare.mjs`, `server/automatic-routing.mjs`: 서버에서 주소와 경로 조회. 호출 정보/결과를 영구 저장하지 않음.
+- `worker.mjs`: 기존 Cloudflare `wakefuel` Worker. 기존 `/opinet`에 `/geocode`, `/taxi/compare`를 추가합니다.
+- `server/edge-handler.mjs`, `server/automatic-routing.mjs`: 요청 검증, 호출 제한, 주소 및 경로 조회.
+- `api/compare.mjs`: 로컬 개발 서버 어댑터. 운영에서는 Cloudflare 모듈을 사용합니다.
 - `dev/server.mjs`: 로컬 자동 조회 미리보기.
 
 ## 실행
@@ -25,13 +27,16 @@ Node.js 20 이상. 서버 환경에 `KAKAO_REST_API_KEY`를 설정한 뒤 `node 
 
 `node --test tests/*.test.js`로 검증합니다.
 
-## 공개 서버 연결
+## 운영 배포
 
-정적 GitHub Pages는 REST 비밀 키를 보관할 수 없으므로 별도 서버 연결이 필요합니다. Vercel 프로젝트는 생성하지 않습니다. 기존 유류비의 Cloudflare Worker 등 기존 실행 환경에 경로 조회 기능을 연결할 수 있습니다. 해당 연결은 아직 배포되지 않았습니다.
-
-- 서버 환경: `KAKAO_REST_API_KEY`, `ALLOWED_ORIGINS` (기본 `https://jslee1019.github.io`).
-- 배포 후 `taxi/config.js`의 `routingEndpoint`를 서버의 `/api/compare` URL로 지정합니다.
-- 현재 요청 크기 제한, 시간 제한, 허용 출처, 프로세스별 호출 제한을 적용합니다. CORS나 메모리 기반 제한은 사용자 인증·분산 쿼터를 대체하지 않습니다. 공개 범위를 넓히기 전에 서버측 인증/공유 호출 제한을 추가해야 합니다.
+- 유류비: https://jslee1019.github.io/fuel/
+- 택시: https://jslee1019.github.io/fuel/taxi/
+- 조회 서버: 기존 `wakefuel.jslee-43a.workers.dev` Worker.
+- 비밀 값은 Cloudflare Secret `KAKAO_REST_API_KEY`, `OPINET_API_KEY`로 보관합니다. HTML이나 저장소에 키를 넣지 않습니다.
+- `taxi/config.js`는 `/taxi/compare`, 기존 유류비 화면은 `/geocode`에 연결합니다.
+- 요청 본문 4 KiB 제한, 지도 요청 시간 제한, 허용 출처 검증, Cloudflare Rate Limit 바인딩을 적용합니다. IP별 분당 30회, 공통 키 분당 120회이며 Cloudflare 위치별 제한입니다. 인증 또는 전체 계정의 강제 비용 한도는 아닙니다.
+- 배포 모듈: `worker.mjs`, `server/edge-handler.mjs`, `server/automatic-routing.mjs`, `taxi/core.js`. `cloudflare-deployment.json`은 비밀 값을 제외한 업로드 메타데이터입니다. 기존 Secret 바인딩을 유지합니다.
+- GitHub Pages는 main 브랜치로 배포합니다. Worker 변경은 Cloudflare에 별도로 배포하고 실제 `/opinet`, `/geocode`, `/taxi/compare` 응답을 확인합니다.
 - 기존 서비스 요금제, 예산, 지도 API 할당량은 변경하지 않습니다.
 
 ## 공식 API
