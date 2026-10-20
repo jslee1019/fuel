@@ -1,4 +1,4 @@
-import { parseKst, kstInput, formatKst, formatDuration, escapeHtml as esc, routeSearchUrl } from './core.js';
+import { parseKst, kstInput, formatKst, formatDuration, escapeHtml as esc, routeSearchUrl, evaluateTaxiPolicy, approvalSummary } from './core.js?v=20261020';
 
 const $ = id => document.getElementById(id);
 const form = $('check-form');
@@ -18,15 +18,15 @@ function invalidate() {
 }
 function summaryText(s) {
   const { input: i, data: d } = s;
-  return `택시 이용 자가검증\n신청자: ${i.applicant} / ${i.department}\n업무 목적: ${i.purpose}\n출발지: ${i.origin}\n미팅 장소: ${i.destination}\n미팅: ${i.meeting.replace('T', ' ')} (한국 시간)\n도착 여유: ${i.buffer}분\n대중교통 60분 이상: ${d.criteria.transitMet ? '충족' : '미충족'}\n택시 30분 이상 단축: ${d.criteria.savingMet ? '충족' : '미충족'}\n조회 시각: ${date(d.checkedAt)} (한국 시간)\n조회 시점 예상값에 따른 자가검증이며 기존 사전 승인이 필요합니다. 미래 시간표·교통 예측을 반영한 출발 시각은 아닙니다.`;
+  return `택시 이용 자가검증\n신청자: ${i.applicant} / ${i.department}\n업무 목적: ${i.purpose}\n출발지: ${i.origin}\n미팅 장소: ${i.destination}\n미팅: ${i.meeting.replace('T', ' ')} (한국 시간)\n도착 여유: ${i.buffer}분\n대중교통 60분 이상: ${d.criteria.transitMet ? '충족' : '미충족'}\n택시 30분 이상 단축: ${d.criteria.savingMet ? '충족' : '미충족'}\n${approvalSummary(d.criteria)}\n조회 시각: ${date(d.checkedAt)} (한국 시간)\n조회 시점 예상값에 따른 자가검증이며 기존 사전 승인이 필요합니다. 미래 시간표·교통 예측을 반영한 출발 시각은 아닙니다.`;
 }
 function render(input, data, sample = false) {
   const t = data.transit.durationSeconds, c = data.taxi.durationSeconds;
-  data.criteria = { transitMet: t >= 3600, savingMet: t - c >= 1800, eligible: t >= 3600 && t - c >= 1800 };
+  data.criteria = evaluateTaxiPolicy(t, c, data.taxi.fare);
   const checks = data.criteria;
   snapshot = sample ? null : { input: { ...input }, data };
   $('empty-result').hidden = true; $('dirty-notice').hidden = true; $('result').hidden = false;
-  $('result').innerHTML = `<div class="result-header"><h2>${sample ? '예시 결과' : '조회 결과'}</h2><span class="status-label ${checks.eligible ? 'eligible' : 'ineligible'}">${checks.eligible ? '기준 충족 · 사전 승인 신청 가능' : '기준 미충족'}</span><p class="result-note">${sample ? '기능 설명용 가상 데이터입니다.' : '조회 시점의 예상 소요 시간 기준입니다.'}</p></div>
+  $('result').innerHTML = `<div class="result-header"><h2>${sample ? '예시 결과' : '조회 결과'}</h2><span class="status-label ${checks.tone}">${checks.label}</span><p class="result-note">${sample ? '기능 설명용 가상 데이터입니다.' : '조회 시점의 예상 소요 시간 기준입니다.'}</p></div>
     <p class="result-person">${esc(input.applicant)} · ${esc(input.department)}<br>${esc(input.purpose)}</p>
     <p>${esc(data.origin.resolved)}<br>→ ${esc(data.destination.resolved)}</p>
     <p class="meeting-target">도착 목표 · 미팅 ${esc(input.buffer)}분 전<strong>${date(data.targetArrival)}</strong></p>
@@ -36,11 +36,12 @@ function render(input, data, sample = false) {
     <tr><td>예상 요금</td><td>${money(data.transit.fare)}</td><td>${money(data.taxi.fare)}<small>호출·통행료 등에 따라 달라질 수 있습니다.</small></td></tr></tbody></table>
     <div class="saving"><span>택시 이용 시 시간 단축</span><strong>${duration(t - c)}</strong></div>
     <div class="checks"><div class="check-line"><span>대중교통 편도 60분 이상</span><b class="${checks.transitMet ? 'pass' : 'fail'}">${checks.transitMet ? '충족' : '미충족'}</b></div><div class="check-line"><span>택시 이용 시 30분 이상 단축</span><b class="${checks.savingMet ? 'pass' : 'fail'}">${checks.savingMet ? '충족' : '미충족'}</b></div></div>
+    <p class="${checks.separateApproval || !checks.fareKnown ? 'message warning' : 'result-note'}"><strong>${checks.fareStatus}</strong><br>${checks.guidance}${!checks.eligible ? '<br>시간 기준 미충족 시에는 다른 예외 사유의 해당 여부도 별도로 확인해야 합니다.' : ''}</p>
     ${data.startsInPast ? '<p class="message warning">현재 시각보다 이른 출발 계획이 포함되어 있습니다. 미팅 일정과 이동 가능 여부를 다시 확인해 주세요.</p>' : ''}
     <p class="result-note">${esc(data.note)}<br>기준 충족은 최종 승인이 아닙니다. 기존 사전 승인 절차를 따라 주세요.</p>
     <div class="result-meta">${esc(data.source)} · 조회 ${date(data.checkedAt)} · 한국 시간</div>`;
   $('export-actions').hidden = sample;
-  $('export-hint').textContent = '신청 요약에는 입력한 일정과 기준 충족 여부가 포함됩니다.';
+  $('export-hint').textContent = '신청 요약에는 입력한 일정, 시간 기준 충족 여부와 별도 승인 필요 여부가 포함됩니다.';
   if (snapshot) {
     $('print-summary').innerHTML = `<h1>택시 이용 자가검증</h1><pre>${esc(summaryText(snapshot))}</pre>`;
     $('print-summary').hidden = false; document.body.classList.remove('print-blocked');
