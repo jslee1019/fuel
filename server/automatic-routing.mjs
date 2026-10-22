@@ -56,12 +56,15 @@ async function scheduledJson(url, key, fetcher, provider, expires) {
   if (remaining <= 0) throw new RoutingError('예정 시간대 조회가 지연되어 승인 판정을 보류했습니다. 다시 조회해 주세요.', 504);
   const response = await fetcher(url, { headers: { Authorization: `KakaoAK ${key}` }, signal: AbortSignal.timeout(Math.min(8000, remaining)) });
   if (!response.ok) {
+    // Expose only the numeric provider error code, never raw messages or credentials.
+    let upstreamCode;
+    try { const failure = await response.json(); if (Number.isInteger(failure.code)) upstreamCode = failure.code; } catch {}
     const denied = response.status === 401 || response.status === 403;
     throw new RoutingError(denied
       ? `${provider} 예정 시간대 조회 권한이 연결되지 않았습니다. 관리자 연결이 필요하며 승인 판정은 보류됩니다.`
       : `${provider} 예정 시간대 조회에 실패했습니다. 현재 시간대 값으로 대체하지 않으며 승인 판정은 보류됩니다.`,
       denied ? 503 : response.status === 429 ? 429 : 502,
-      { code: denied ? 'SCHEDULED_PROVIDER_ACCESS_REQUIRED' : 'SCHEDULED_PROVIDER_FAILED', provider, upstreamStatus: response.status });
+      { code: denied ? 'SCHEDULED_PROVIDER_ACCESS_REQUIRED' : 'SCHEDULED_PROVIDER_FAILED', provider, upstreamStatus: response.status, upstreamCode });
   }
   return response.json();
 }
