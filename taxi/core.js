@@ -1,5 +1,14 @@
 export const POLICY = Object.freeze({ minimumTransitMinutes: 60, minimumSavingMinutes: 30, separateApprovalFare: 50000 });
 
+export function validScheduledComparison(data, targetArrival, now = Date.now()) {
+  if (data?.basis !== 'scheduled-arrival' || data.timeAware !== true || Date.parse(data.targetArrival) !== targetArrival || !Number.isFinite(Date.parse(data.checkedAt))) return false;
+  return [data.transit, data.taxi].every(route => {
+    const departure = Date.parse(route?.departureAt), arrival = Date.parse(route?.arrivalAt);
+    return Number.isInteger(route?.durationSeconds) && route.durationSeconds > 0 && departure > now &&
+      arrival === departure + route.durationSeconds * 1000 && arrival <= targetArrival;
+  });
+}
+
 export function evaluateTaxiPolicy(transitSeconds, taxiSeconds, fare) {
   const transitMet = transitSeconds >= POLICY.minimumTransitMinutes * 60;
   const savingMet = transitSeconds - taxiSeconds >= POLICY.minimumSavingMinutes * 60;

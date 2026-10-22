@@ -1,4 +1,4 @@
-import { parseKst, kstInput, formatKst, formatDuration, escapeHtml as esc, routeSearchUrl, evaluateTaxiPolicy, approvalSummary } from './core.js?v=20261020';
+import { parseKst, kstInput, formatKst, formatDuration, escapeHtml as esc, routeSearchUrl, evaluateTaxiPolicy, approvalSummary, validScheduledComparison } from './core.js?v=20261022';
 
 const $ = id => document.getElementById(id);
 const form = $('check-form');
@@ -18,7 +18,7 @@ function invalidate() {
 }
 function summaryText(s) {
   const { input: i, data: d } = s;
-  return `택시 이용 자가검증\n신청자: ${i.applicant} / ${i.department}\n업무 목적: ${i.purpose}\n출발지: ${i.origin}\n미팅 장소: ${i.destination}\n미팅: ${i.meeting.replace('T', ' ')} (한국 시간)\n도착 여유: ${i.buffer}분\n대중교통 60분 이상: ${d.criteria.transitMet ? '충족' : '미충족'}\n택시 30분 이상 단축: ${d.criteria.savingMet ? '충족' : '미충족'}\n${approvalSummary(d.criteria)}\n조회 시각: ${date(d.checkedAt)} (한국 시간)\n조회 시점 예상값에 따른 자가검증이며 기존 사전 승인이 필요합니다. 미래 시간표·교통 예측을 반영한 출발 시각은 아닙니다.`;
+  return `택시 이용 자가검증\n신청자: ${i.applicant} / ${i.department}\n업무 목적: ${i.purpose}\n출발지: ${i.origin}\n미팅 장소: ${i.destination}\n미팅: ${i.meeting.replace('T', ' ')} (한국 시간)\n도착 여유: ${i.buffer}분\n대중교통 60분 이상: ${d.criteria.transitMet ? '충족' : '미충족'}\n택시 30분 이상 단축: ${d.criteria.savingMet ? '충족' : '미충족'}\n${approvalSummary(d.criteria)}\n조회 시각: ${date(d.checkedAt)} (한국 시간)\n도착 목표: ${date(d.targetArrival)}\n대중교통 출발: ${date(d.transit.departureAt)} / 예상 도착: ${date(d.transit.arrivalAt)}\n택시 출발: ${date(d.taxi.departureAt)} / 예상 도착: ${date(d.taxi.arrivalAt)}\n각 출발 예정 시각의 경로로 확인한 결과이며 기존 사전 승인이 필요합니다.`;
 }
 function render(input, data, sample = false) {
   const t = data.transit.durationSeconds, c = data.taxi.durationSeconds;
@@ -26,13 +26,14 @@ function render(input, data, sample = false) {
   const checks = data.criteria;
   snapshot = sample ? null : { input: { ...input }, data };
   $('empty-result').hidden = true; $('dirty-notice').hidden = true; $('result').hidden = false;
-  $('result').innerHTML = `<div class="result-header"><h2>${sample ? '예시 결과' : '조회 결과'}</h2><span class="status-label ${checks.tone}">${checks.label}</span><p class="result-note">${sample ? '기능 설명용 가상 데이터입니다.' : '조회 시점의 예상 소요 시간 기준입니다.'}</p></div>
+  $('result').innerHTML = `<div class="result-header"><h2>${sample ? '예시 결과' : '조회 결과'}</h2><span class="status-label ${checks.tone}">${checks.label}</span><p class="result-note">${sample ? '기능 설명용 가상 데이터입니다.' : '각 출발 예정 시각의 예상 소요 시간 기준입니다.'}</p></div>
     <p class="result-person">${esc(input.applicant)} · ${esc(input.department)}<br>${esc(input.purpose)}</p>
     <p>${esc(data.origin.resolved)}<br>→ ${esc(data.destination.resolved)}</p>
     <p class="meeting-target">도착 목표 · 미팅 ${esc(input.buffer)}분 전<strong>${date(data.targetArrival)}</strong></p>
     <table class="comparison"><thead><tr><th>비교 항목</th><th>대중교통</th><th>택시</th></tr></thead><tbody>
     <tr><td>예상 소요 시간</td><td><span class="big">${duration(t)}</span></td><td><span class="big">${duration(c)}</span></td></tr>
-    <tr><td>출발 계획</td><td>${date(data.transit.departureAt)}</td><td>${date(data.taxi.departureAt)}</td></tr>
+    <tr><td>권장 출발 시각</td><td>${date(data.transit.departureAt)}</td><td>${date(data.taxi.departureAt)}</td></tr>
+    <tr><td>예상 도착 시각</td><td>${date(data.transit.arrivalAt)}</td><td>${date(data.taxi.arrivalAt)}</td></tr>
     <tr><td>예상 요금</td><td>${money(data.transit.fare)}</td><td>${money(data.taxi.fare)}<small>호출·통행료 등에 따라 달라질 수 있습니다.</small></td></tr></tbody></table>
     <div class="saving"><span>택시 이용 시 시간 단축</span><strong>${duration(t - c)}</strong></div>
     <div class="checks"><div class="check-line"><span>대중교통 편도 60분 이상</span><b class="${checks.transitMet ? 'pass' : 'fail'}">${checks.transitMet ? '충족' : '미충족'}</b></div><div class="check-line"><span>택시 이용 시 30분 이상 단축</span><b class="${checks.savingMet ? 'pass' : 'fail'}">${checks.savingMet ? '충족' : '미충족'}</b></div></div>
@@ -69,13 +70,13 @@ form.addEventListener('submit', async event => {
   const endpoint = window.TAXI_CONFIG?.routingEndpoint;
   if (!endpoint) { error('자동 조회 서버 연결 준비 중입니다. 연결 완료 후 이용해 주세요.'); return; }
   const current = generation; controller = new AbortController();
-  const timeout = setTimeout(() => controller?.abort(), 28000);
-  $('calculate').disabled = true; $('calculate').textContent = '다음지도 이동 시간 조회 중…';
+  const timeout = setTimeout(() => controller?.abort(), 55000);
+  $('calculate').disabled = true; $('calculate').textContent = '예정 시간대별 경로 확인 중…';
   try {
     const response = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ origin: input.origin.trim(), destination: input.destination.trim(), meeting: input.meeting, bufferMinutes: Number(input.buffer) }), signal: controller.signal });
     const data = await response.json(); if (current !== generation) return;
     if (!response.ok) { error(data.message || '이동 시간을 조회하지 못했습니다.'); showCandidates(data.details); return; }
-    if (data.basis !== 'query-time-estimate' || ![data.transit?.durationSeconds, data.taxi?.durationSeconds].every(v => Number.isInteger(v) && v > 0) || ![data.checkedAt,data.targetArrival,data.transit?.departureAt,data.taxi?.departureAt].every(v => Number.isFinite(Date.parse(v)))) throw new Error('invalid-response');
+    if (!validScheduledComparison(data, parseKst(input.meeting) - Number(input.buffer) * 60000)) { error('예정 출발·도착 시각을 확인하지 못해 승인 판정을 보류했습니다. 다시 조회해 주세요.'); return; }
     render(input, data);
   } catch (err) {
     if (current === generation) error(err.name === 'AbortError' ? '조회 시간이 길어지고 있습니다. 잠시 후 다시 시도해 주세요.' : '이동 시간을 조회하지 못했습니다. 연결 상태를 확인하고 다시 시도해 주세요.');
@@ -99,7 +100,7 @@ $('sample').addEventListener('click', () => {
   invalidate(); const meeting = kstInput(Date.now() + 86400000), arrival = parseKst(meeting) - 600000;
   const input = { applicant:'홍길동',department:'영업팀',purpose:'거래처 미팅',origin:'출발지 예시',destination:'미팅 장소 예시',meeting,buffer:'10' };
   for (const [key,value] of Object.entries(input)) $(key).value = value;
-  render(input,{ source:'가상 예시',checkedAt:new Date().toISOString(),targetArrival:new Date(arrival).toISOString(),origin:{resolved:input.origin},destination:{resolved:input.destination},transit:{durationSeconds:4800,departureAt:new Date(arrival-4800000).toISOString(),fare:2500},taxi:{durationSeconds:2700,departureAt:new Date(arrival-2700000).toISOString(),fare:35000},note:'이 예시는 실제 지도 조회 결과가 아니며 신청에 사용할 수 없습니다.' },true);
+  render(input,{ source:'가상 예시',checkedAt:new Date().toISOString(),targetArrival:new Date(arrival).toISOString(),origin:{resolved:input.origin},destination:{resolved:input.destination},transit:{durationSeconds:4800,arrivalAt:new Date(arrival).toISOString(),departureAt:new Date(arrival-4800000).toISOString(),fare:2500},taxi:{durationSeconds:2700,arrivalAt:new Date(arrival).toISOString(),departureAt:new Date(arrival-2700000).toISOString(),fare:35000},note:'이 예시는 실제 지도 조회 결과가 아니며 신청에 사용할 수 없습니다.' },true);
 });
 invalidate();
 

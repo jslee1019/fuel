@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="./styles.css">
   <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" defer></script>
   <script src="./config.js?v=20261020" defer></script>
-  <script type="module" src="./app.js?v=20261020"></script>
+  <script type="module" src="./app.js?v=20261022"></script>
 </head>
 <body>
   <header class="site-header no-print">
@@ -40,7 +40,7 @@
           <p class="hint">주소 검색으로 정확한 이동 장소를 선택해 주세요. 다음지도 경로는 자동 조회됩니다.</p>
           
         </section>
-        <section class="card"><h2>조회 기준</h2><p class="hint">대중교통은 도보·대기·환승을 포함한 최단 소요 경로, 택시는 자동차 최단 시간 경로를 비교합니다. 도착 여유시간은 두 수단에 동일하게 적용하며 60분·30분 기준에는 포함하지 않습니다.</p><p class="hint">조회 시점의 예상 소요 시간을 미팅 시각에서 역산합니다. 미래 대중교통 시간표와 교통 예측을 반영한 확정 출발 시각은 아니므로 출발 전에 다시 확인해 주세요.</p></section>
+        <section class="card"><h2>조회 기준</h2><p class="hint">대중교통은 도보·대기·환승을 포함한 최단 소요 경로, 택시는 자동차 최단 시간 경로를 비교합니다. 도착 여유시간은 두 수단에 동일하게 적용하며 60분·30분 기준에는 포함하지 않습니다.</p><p class="hint">미팅 시각에서 도착 여유시간을 뺀 목표 시각을 기준으로, 각 출발 예정 날짜·시각의 경로를 조회합니다. 목표 시각 이전 도착이 확인된 경우에만 기준 충족 여부를 표시합니다. 예정 시간대 조회가 불가능하면 판정을 보류합니다.</p></section>
         <div id="place-candidates" class="card" hidden></div>
         <div id="form-error" class="message error" role="alert" hidden></div>
         <button class="button primary full" id="calculate" type="submit">이동 시간 자동 조회 <span>→</span></button>
@@ -53,7 +53,7 @@
         <div id="export-actions" class="export-actions no-print" hidden><button type="button" id="print" class="button primary full">신청 요약 PDF 저장</button><button type="button" id="copy-result" class="button outline full">신청 내용 복사</button><p id="export-hint" class="hint"></p></div>
       </aside>
     </div>
-    <section class="card operating-notes no-print"><h2>이용 전에 확인해 주세요</h2><p>자가검증 결과는 최종 승인이 아닙니다. 기존 인사팀장·경영진 사전 승인과 카카오T 비즈니스 호출 절차를 따라 주세요. 대중교통 접근 불가, 야근 귀가, 해외 출장, 시간 임계 연계작업 등 다른 예외 사유는 기존 기준에 따라 별도로 검토합니다.</p><p>자동 조회는 현재 예상 소요 시간을 기준으로 합니다. 출발 시각은 계획값이며 실제 도착을 보장하지 않습니다. 예측 시간에 차이가 생겨도 그 자체로 위반을 판정하지 않습니다.</p></section>
+    <section class="card operating-notes no-print"><h2>이용 전에 확인해 주세요</h2><p>자가검증 결과는 최종 승인이 아닙니다. 기존 인사팀장·경영진 사전 승인과 카카오T 비즈니스 호출 절차를 따라 주세요. 대중교통 접근 불가, 야근 귀가, 해외 출장, 시간 임계 연계작업 등 다른 예외 사유는 기존 기준에 따라 별도로 검토합니다.</p><p>자동 조회는 각 출발 예정 시각의 경로 예측을 기준으로 합니다. 실제 시간표·교통 상황 및 택시 배차 대기에 따라 도착이 달라질 수 있으므로 출발 전에 다시 확인해 주세요. 예측 시간에 차이가 생겨도 그 자체로 위반을 판정하지 않습니다.</p></section>
     <article id="print-summary" class="print-only" hidden></article>
     <footer class="site-footer no-print"><span>WAKE · SANS</span><span>택시 이용 기준 v2026.10.20 · 개인 이동 정보는 서버에 저장하지 않습니다.</span></footer>
   </main>
